@@ -5,7 +5,8 @@ CREATE TABLE short_urls (
     original_url TEXT NOT NULL,
     short_code VARCHAR(10) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    access_count INT DEFAULT 0
 );
 
 CREATE FUNCTION update_timestamp()
