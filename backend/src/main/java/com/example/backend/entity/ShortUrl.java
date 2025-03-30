@@ -20,7 +20,7 @@ public class ShortUrl {
     private String originalUrl;
     
     @Column(name = "short_code" , nullable = false)
-    private String shortcode;
+    private String shortCode;
     
     @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
