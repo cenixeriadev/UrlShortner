@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 // Servicio de lectura y escritura (Read and Write API)
 @RestController
-@RequestMapping("/api/v1")
-public class UrlShortnerController {
+@RequestMapping("/api/v1/read")
+public class ReadController {
     
     private UrlShortnerService shortnerUrlService;
 
@@ -15,8 +15,4 @@ public class UrlShortnerController {
     public ShortUrl getOriginalUrl(@PathVariable String shortcode) {
         return shortnerUrlService.getUrlByShortCode(shortcode);
     }
-//    @PostMapping("/shortner")
-//    public ShortUrl getShortUrl(){
-//        return shortnerUrlService.getShortUrl();
-//    }
 }
