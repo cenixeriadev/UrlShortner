@@ -12,9 +12,8 @@ import java.util.UUID;
 @Data
 public class ShortUrl {
     @Id
-    @Column(name = "id"  , columnDefinition = "BINARY(16)", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+    @Column(name = "id", columnDefinition = "UUID", nullable = false)
+    private UUID id;  // ✅ Generación compatible con PostgreSQL
     
     @Column(name = "original_url", nullable = false)
     private String originalUrl;
@@ -29,5 +28,5 @@ public class ShortUrl {
     private Timestamp updateAt;
     
     @Column(name = "access_count", nullable = false)
-    private Integer accessCount;
+    private Integer accessCount = 0;
 }
