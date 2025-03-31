@@ -11,7 +11,7 @@ public class ReadController {
     
     private UrlShortnerService shortnerUrlService;
 
-    @GetMapping("/shortner/{shortcode}")
+    @GetMapping("/shorten/{shortcode}")
     public ShortUrl getOriginalUrl(@PathVariable String shortcode) {
         return shortnerUrlService.getUrlByShortCode(shortcode);
     }

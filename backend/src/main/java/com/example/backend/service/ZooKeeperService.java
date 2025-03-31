@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ZooKeeperService {
 
-    private static final String ZK_SHORTENER_PATH = "/shortener";
+    private static final String ZK_SHORTENER_PATH = "/shorten";
     private final CuratorFramework client;
     private final InterProcessMutex lock;
 
