@@ -18,5 +18,8 @@ public class RedisService {
     public String getFromCache(String shortCode) {
         return redisTemplate.opsForValue().get(shortCode);
     }
+    public void deleteFromCache(String shortCode) {
+        redisTemplate.delete(shortCode);
+    }
 }
 

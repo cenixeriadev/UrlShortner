@@ -13,9 +13,10 @@ import java.util.UUID;
 
 @Repository
 public interface ShortUrlRepository extends JpaRepository<ShortUrl, UUID> {
-    
+    @Transactional(readOnly = true) 
     Optional<ShortUrl> findByShortCode(String shortCode);
     
+    @Transactional
     void deleteByShortCode(String shortCode);
 
     @Modifying

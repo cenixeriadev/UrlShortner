@@ -5,10 +5,8 @@ import com.example.backend.service.UrlShortnerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @Slf4j
@@ -29,6 +27,11 @@ public class WriteController {
             log.error("Error generating short URL: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
+    }
+    @DeleteMapping("/shorten/{shortcode}")
+    public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
+        urlShortnerService.deleteUrlByShortCode(shortcode);
+        return ResponseEntity.ok("Short URL deleted successfully");
     }
     
 }

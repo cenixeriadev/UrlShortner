@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.ShortUrl;
+import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.ShortUrlRepository;
 import com.example.backend.utils.Base62Converter;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UrlShortnerService {
+    
     private final ShortUrlRepository shortUrlRepository;
     private final RedisService redisService;
     private final ZooKeeperService zooKeeperService;
@@ -26,14 +29,13 @@ public class UrlShortnerService {
         return shortUrlRepository.findByShortCode(shortCode).orElseThrow(() -> new RuntimeException("Url not found"));
     }
     @Transactional
-    public String generateShortUrl(String longUrl) throws Exception {
+    public String generateShortUrl(String longUrl){
         log.info("This is the longURL: {}", longUrl);
         int sequence = zooKeeperService.getNextSequence();
+        
         log.info("Get nextSequence");
         String shortCode = Base62Converter.encode(sequence);
         
-        
-        // Crear y guardar en la BD
         ShortUrl shortUrl = new ShortUrl();
         shortUrl.setId(UUID.randomUUID());
         shortUrl.setShortCode(shortCode);
@@ -46,5 +48,18 @@ public class UrlShortnerService {
         redisService.saveToCache(shortCode, longUrl);
 
         return shortCode;
+    }
+    @Transactional
+    public void deleteUrlByShortCode(String shortCode) {
+        log.info("Deleting URL by short code: {}", shortCode);
+        Optional<ShortUrl> url = shortUrlRepository.findByShortCode(shortCode);
+        if(url != null && url.isPresent()) {
+            shortUrlRepository.deleteByShortCode(shortCode);
+            redisService.deleteFromCache(shortCode);
+        }
+        else {
+            throw new ResourceNotFoundException("Shortcode no existe: " + shortCode);
+        }
+        
     }
 }

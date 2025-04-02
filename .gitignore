@@ -34,4 +34,4 @@ build/
 ### NodeJs ###
 /node_modules
 /dist
-/.env
+/backend/.env
