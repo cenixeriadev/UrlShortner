@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<?> handleResourceNotFound(ResourceNotFoundException ex) {
+    public ResponseEntity<?> handleResourceNotFound(ResourceNotFoundException ex) {//404
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    //TODO: Do more implementations specific to a bad status code(400  , 403 , 500 , etc)
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneralException(Exception ex) {
