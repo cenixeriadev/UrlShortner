@@ -13,12 +13,12 @@ import java.util.UUID;
 public class ShortUrl {
     @Id
     @Column(name = "id", columnDefinition = "UUID", nullable = false)
-    private UUID id;  // ✅ Generación compatible con PostgreSQL
+    private UUID id;  
     
     @Column(name = "original_url", nullable = false)
     private String originalUrl;
     
-    @Column(name = "short_code" , nullable = false)
+    @Column(name = "short_code" , nullable = false , unique = true)
     private String shortCode;
     
     @Column(name = "created_at", nullable = false)

@@ -58,8 +58,23 @@ public class UrlShortnerService {
             redisService.deleteFromCache(shortCode);
         }
         else {
-            throw new ResourceNotFoundException("Shortcode no existe: " + shortCode);
+            throw new ResourceNotFoundException("Shortcode doesn't exist: " + shortCode);
         }
         
+    }
+    @Transactional
+    public void updateUrlByShortCode(String shortCode, String newLongUrl) {
+        log.info("Updating URL by short code: {} to new long URL: {}", shortCode, newLongUrl);
+        Optional<ShortUrl> optionalUrl = shortUrlRepository.findByShortCode(shortCode);
+        if (optionalUrl.isEmpty()) {
+            throw new ResourceNotFoundException("Shortcode doesn't exist: " + shortCode);
+        }
+
+        // Actualizar el originalUrl y updateAt
+        shortUrlRepository.updateUrl(newLongUrl, shortCode);
+        shortUrlRepository.updateUpdateAt(Timestamp.from(Instant.now()), shortCode);
+
+        // Guardar en Redis
+        redisService.saveToCache(shortCode, newLongUrl);
     }
 }

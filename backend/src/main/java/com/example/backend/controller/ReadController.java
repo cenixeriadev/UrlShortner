@@ -36,6 +36,6 @@ public class ReadController {
         }
         log.info("Retrieving original url from database");
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);    
-        return ResponseEntity.ok(shortUrl.getOriginalUrl());
+        return ResponseEntity.ok(shortUrl);
     }
 }

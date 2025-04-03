@@ -30,8 +30,23 @@ public class WriteController {
     }
     @DeleteMapping("/shorten/{shortcode}")
     public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
-        urlShortnerService.deleteUrlByShortCode(shortcode);
-        return ResponseEntity.ok("Short URL deleted successfully");
+        try {
+            urlShortnerService.deleteUrlByShortCode(shortcode);
+            return ResponseEntity.ok("Short URL deleted successfully");
+        }catch(Exception e){
+            log.error("Error deleting short URL: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
     }
-    
+    @PutMapping("/shorten/{shortcode}")
+    public ResponseEntity<?> updateShorten(@PathVariable String shortcode, @RequestBody ShortenRequest request) {
+        try {
+            urlShortnerService.updateUrlByShortCode(shortcode, request.url());
+            return ResponseEntity.ok("Short URL updated successfully");
+
+        }catch (Exception e) {
+            log.error("Error updating short URL: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
 }

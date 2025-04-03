@@ -15,7 +15,7 @@ public class ZooKeeperService {
     private static final String INITIAL_SEQUENCE_VALUE = "0";
     private final CuratorFramework client;
     private final InterProcessMutex lock;
-
+    
     public ZooKeeperService(CuratorFramework client) {
         this.client = client;
         this.lock = new InterProcessMutex(client, ZK_SHORTENER_PATH + "/lock");

@@ -9,15 +9,3 @@ CREATE TABLE short_urls (
     access_count INT DEFAULT 0
 );
 
-CREATE FUNCTION update_timestamp()
-    RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_timestamp
-    BEFORE UPDATE ON short_urls
-    FOR EACH ROW
-    EXECUTE FUNCTION update_timestamp();
