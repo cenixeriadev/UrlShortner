@@ -18,4 +18,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleGeneralException(Exception ex) {
         return ResponseEntity.internalServerError().body("Error interno: " + ex.getMessage());
     }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

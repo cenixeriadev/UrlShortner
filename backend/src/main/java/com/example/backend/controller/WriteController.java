@@ -1,9 +1,11 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.ShortenRequest;
+import com.example.backend.exception.BadRequestException;
 import com.example.backend.service.UrlShortnerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,33 +22,25 @@ public class WriteController {
     }
     @PostMapping("/shorten")
     public ResponseEntity<?> createShortUrl(@RequestBody  ShortenRequest request){
-        try {
-            String shortUrl = urlShortnerService.generateShortUrl(request.url());
-            return ResponseEntity.ok(shortUrl);
-        } catch (Exception e) {
-            log.error("Error generating short URL: {}", e.getMessage());
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        
+        if (request == null || request.url() == null || request.url().isEmpty()) {
+            log.error("Error generating short code");
+            throw new BadRequestException("La URL no puede ser nula o vacía.");
         }
+        String shortUrl = urlShortnerService.generateShortCode(request.url());
+        return ResponseEntity.status(HttpStatus.CREATED).body(shortUrl);
     }
     @DeleteMapping("/shorten/{shortcode}")
     public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
-        try {
-            urlShortnerService.deleteUrlByShortCode(shortcode);
-            return ResponseEntity.ok("Short URL deleted successfully");
-        }catch(Exception e){
-            log.error("Error deleting short URL: {}", e.getMessage());
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
+        urlShortnerService.deleteUrlByShortCode(shortcode);
+        return ResponseEntity.ok("Short URL deleted successfully");
+        
     }
     @PutMapping("/shorten/{shortcode}")
     public ResponseEntity<?> updateShorten(@PathVariable String shortcode, @RequestBody ShortenRequest request) {
-        try {
-            urlShortnerService.updateUrlByShortCode(shortcode, request.url());
-            return ResponseEntity.ok("Short URL updated successfully");
+        urlShortnerService.updateUrlByShortCode(shortcode, request.url());
+        return ResponseEntity.ok("Short URL updated successfully");
 
-        }catch (Exception e) {
-            log.error("Error updating short URL: {}", e.getMessage());
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
+        
     }
 }

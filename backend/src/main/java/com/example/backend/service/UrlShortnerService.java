@@ -26,11 +26,11 @@ public class UrlShortnerService {
     public ShortUrl getUrlByShortCode(String shortCode) {
         log.info("Looking up URL by short code: {}", shortCode);
         shortUrlRepository.incrementAccessCount(shortCode);
-        return shortUrlRepository.findByShortCode(shortCode).orElseThrow(() -> new RuntimeException("Url not found"));
+        return shortUrlRepository.findByShortCode(shortCode).orElseThrow(() -> new ResourceNotFoundException("Url not found"));
     }
     @Transactional
-    public String generateShortUrl(String longUrl){
-        log.info("This is the longURL: {}", longUrl);
+    public String generateShortCode(String originalUrl){
+        log.info("This is the originalURL: {}", originalUrl);
         int sequence = zooKeeperService.getNextSequence();
         
         log.info("Get nextSequence");
@@ -39,13 +39,13 @@ public class UrlShortnerService {
         ShortUrl shortUrl = new ShortUrl();
         shortUrl.setId(UUID.randomUUID());
         shortUrl.setShortCode(shortCode);
-        shortUrl.setOriginalUrl(longUrl);
+        shortUrl.setOriginalUrl(originalUrl);
         shortUrl.setCreatedAt(Timestamp.from(Instant.now()));
         shortUrl.setUpdateAt(Timestamp.from(Instant.now()));
         shortUrl.setAccessCount(0);
 
         shortUrlRepository.save(shortUrl);
-        redisService.saveToCache(shortCode, longUrl);
+        redisService.saveToCache(shortCode, originalUrl);
 
         return shortCode;
     }
@@ -58,6 +58,7 @@ public class UrlShortnerService {
             redisService.deleteFromCache(shortCode);
         }
         else {
+            log.error("Error deleting url by short code : {}" , shortCode);
             throw new ResourceNotFoundException("Shortcode doesn't exist: " + shortCode);
         }
         
@@ -67,7 +68,8 @@ public class UrlShortnerService {
         log.info("Updating URL by short code: {} to new long URL: {}", shortCode, newLongUrl);
         Optional<ShortUrl> optionalUrl = shortUrlRepository.findByShortCode(shortCode);
         if (optionalUrl.isEmpty()) {
-            throw new ResourceNotFoundException("Shortcode doesn't exist: " + shortCode);
+            log.error("Error updating url by short code: {}", shortCode);
+            throw new ResourceNotFoundException("Shortcode doesn't exist: " + shortCode );
         }
 
         // Actualizar el originalUrl y updateAt
