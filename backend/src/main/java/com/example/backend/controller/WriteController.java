@@ -33,7 +33,7 @@ public class WriteController {
     @DeleteMapping("/shorten/{shortcode}")
     public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
         urlShortnerService.deleteUrlByShortCode(shortcode);
-        return ResponseEntity.ok("Short URL deleted successfully");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Short URL deleted successfully");
         
     }
     @PutMapping("/shorten/{shortcode}")

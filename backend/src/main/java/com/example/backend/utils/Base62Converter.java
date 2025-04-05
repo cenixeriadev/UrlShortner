@@ -4,20 +4,13 @@ public class Base62Converter {
     private static final String BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final int BASE = 62;
 
-    public static String encode(long value) {
-        StringBuilder shortCode = new StringBuilder();
+    public static String encode(int value) {
+        StringBuilder sb = new StringBuilder();
         while (value > 0) {
-            shortCode.insert(0, BASE62.charAt((int) (value % BASE)));
+            sb.insert(0, BASE62.charAt(value % BASE));
             value /= BASE;
         }
-        return shortCode.toString();
+        return !sb.isEmpty() ? sb.toString() : "0"; 
     }
 
-    public static long decode(String shortCode) {
-        long value = 0;
-        for (char c : shortCode.toCharArray()) {
-            value = value * BASE + BASE62.indexOf(c);
-        }
-        return value;
-    }
 }

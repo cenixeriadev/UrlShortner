@@ -33,7 +33,7 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, UUID> {
     
     @Modifying
     @Transactional
-    @Query("UPDATE ShortUrl s SET s.originalUrl = :url , s.accessCount = 0 WHERE s.shortCode = :shortCode")
+    @Query("UPDATE ShortUrl s SET s.url = :url , s.accessCount = 0 WHERE s.shortCode = :shortCode")
     void updateUrl(@Param("url") String url,@Param("shortCode") String shortCode);
     
 }

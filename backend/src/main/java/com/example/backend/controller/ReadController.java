@@ -36,6 +36,11 @@ public class ReadController {
         }
         log.info("Retrieving original url from database");
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);    
-        return ResponseEntity.ok(shortUrl);
+        return ResponseEntity.ok(shortUrl.getUrl());
+    }
+    @GetMapping("/shorten/{shortcode}/stats")
+    public ResponseEntity<?> getStats(@PathVariable String shortcode) {
+        ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
+        return ResponseEntity.ok(shortUrl.getAccessCount());
     }
 }

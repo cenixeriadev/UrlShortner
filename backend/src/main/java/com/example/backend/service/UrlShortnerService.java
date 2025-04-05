@@ -3,7 +3,6 @@ package com.example.backend.service;
 import com.example.backend.entity.ShortUrl;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.ShortUrlRepository;
-import com.example.backend.utils.Base62Converter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,23 +28,22 @@ public class UrlShortnerService {
         return shortUrlRepository.findByShortCode(shortCode).orElseThrow(() -> new ResourceNotFoundException("Url not found"));
     }
     @Transactional
-    public String generateShortCode(String originalUrl){
-        log.info("This is the originalURL: {}", originalUrl);
-        int sequence = zooKeeperService.getNextSequence();
+    public String generateShortCode(String url){
+        log.info("This is the originalURL: {}", url);
+        String shortCode = zooKeeperService.getNextShortCode();
         
         log.info("Get nextSequence");
-        String shortCode = Base62Converter.encode(sequence);
         
         ShortUrl shortUrl = new ShortUrl();
         shortUrl.setId(UUID.randomUUID());
         shortUrl.setShortCode(shortCode);
-        shortUrl.setOriginalUrl(originalUrl);
+        shortUrl.setUrl(url);
         shortUrl.setCreatedAt(Timestamp.from(Instant.now()));
         shortUrl.setUpdateAt(Timestamp.from(Instant.now()));
         shortUrl.setAccessCount(0);
 
         shortUrlRepository.save(shortUrl);
-        redisService.saveToCache(shortCode, originalUrl);
+        redisService.saveToCache(shortCode, url);
 
         return shortCode;
     }

@@ -1,4 +1,5 @@
 package com.example.backend.service;
+import com.example.backend.utils.Base62Converter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
@@ -36,7 +37,7 @@ public class ZooKeeperService {
         }
     }
 
-    public int getNextSequence() {
+    public String getNextShortCode() {
         try {
             if (!lock.acquire(2, TimeUnit.SECONDS)) {
                 throw new RuntimeException("Timeout al adquirir el bloqueo");
@@ -49,11 +50,14 @@ public class ZooKeeperService {
 
             sequence++;
             client.setData().forPath(ZK_SHORTENER_PATH, String.valueOf(sequence).getBytes(StandardCharsets.UTF_8));
-            log.info("Nueva secuencia generada: {}", sequence);
-            return sequence;
+
+            String shortCode = Base62Converter.encode(sequence);
+            log.info("Nueva secuencia generada: {} → Código: {}", sequence, shortCode);
+
+            return shortCode;
         } catch (Exception e) {
-            log.error("Error en getNextSequence: {}", e.getMessage());
-            throw new RuntimeException("Error al generar secuencia", e);
+            log.error("Error en getNextShortCode: {}", e.getMessage());
+            throw new RuntimeException("Error al generar código corto", e);
         } finally {
             try {
                 if (lock.isAcquiredInThisProcess()) {
