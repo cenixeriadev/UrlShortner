@@ -1,0 +1,85 @@
+services:
+  backend:
+    build: backend
+    image: 'docker-spring-boot-postgres:latest'
+    container_name: backend
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - ZOOKEEPER_HOST=zookeeper
+      - DB_HOST=pg
+      - DB_NAME=urlshort
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - backend_network
+    depends_on:
+      pg:
+        condition: service_started
+      redis:
+        condition: service_started
+      zookeeper:
+        condition: service_healthy
+    volumes:
+      - ./.env:/app/.env
+    restart: always
+
+  pg:
+    image: postgres:16
+    container_name: pg
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB : urlshort
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - backend_network  
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db:/docker-entrypoint-initdb.d
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    networks:
+      - backend_network
+    ports:
+      - "6379:6379"
+    restart: always
+
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
+    ports:
+      - "2182:2182"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+    networks:
+      - backend_network
+    healthcheck:
+      test: [ "CMD-SHELL", "zkServer.sh status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - zkdata:/data
+      - zkdatalog:/datalog
+    restart: always
+    
+
+volumes:
+  pgdata:
+  zkdata:
+  zkdatalog:
+networks:
+  backend_network:
+    driver: bridge
