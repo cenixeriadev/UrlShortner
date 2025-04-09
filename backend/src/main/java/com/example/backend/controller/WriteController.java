@@ -25,7 +25,7 @@ public class WriteController {
         
         if (request == null || request.url() == null || request.url().isEmpty()) {
             log.error("Error generating short code");
-            throw new BadRequestException("La URL no puede ser nula o vacía.");
+            throw new BadRequestException("The URL can't be null or void");
         }
         String shortUrl = urlShortnerService.generateShortCode(request.url());
         return ResponseEntity.status(HttpStatus.CREATED).body(shortUrl);
