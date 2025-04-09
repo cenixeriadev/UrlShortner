@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit;
 public class ZooKeeperService {
 
     private static final String ZK_SHORTENER_PATH = "/shorten";
-    private static final String INITIAL_SEQUENCE_VALUE = "0";
+    private static final Long FIRST_RANGE_START_VALUE = 100000L;
+    private static final Long RANGE_LENGTH = 100000L;
     private final CuratorFramework client;
     private final InterProcessMutex lock;
     
@@ -28,7 +29,7 @@ public class ZooKeeperService {
             if (client.checkExists().forPath(ZK_SHORTENER_PATH) == null) {
                 client.create()
                         .creatingParentsIfNeeded()
-                        .forPath(ZK_SHORTENER_PATH, INITIAL_SEQUENCE_VALUE.getBytes(StandardCharsets.UTF_8));
+                        .forPath(ZK_SHORTENER_PATH, FIRST_RANGE_START_VALUE.toString().getBytes(StandardCharsets.UTF_8));
                 log.info("ZNode inicializado en: {}", ZK_SHORTENER_PATH);
             }
         } catch (Exception e) {
@@ -45,8 +46,11 @@ public class ZooKeeperService {
             log.info("Bloqueo adquirido para generar secuencia");
 
             byte[] data = client.getData().forPath(ZK_SHORTENER_PATH);
-            String currentValue = data != null ? new String(data, StandardCharsets.UTF_8) : INITIAL_SEQUENCE_VALUE;
-            int sequence = parseSequence(currentValue);
+            Long rangeStartValue = Long.parseLong(new String(data));
+            long nextRangeStartValue = rangeStartValue + RANGE_LENGTH;
+            
+            String currentValue = new String(Long.toString(nextRangeStartValue).getBytes(), StandardCharsets.UTF_8);
+            Long sequence = parseSequence(currentValue);
 
             sequence++;
             client.setData().forPath(ZK_SHORTENER_PATH, String.valueOf(sequence).getBytes(StandardCharsets.UTF_8));
@@ -70,12 +74,12 @@ public class ZooKeeperService {
         }
     }
 
-    private int parseSequence(String value) {
+    private Long parseSequence(String value) {
         try {
-            return Integer.parseInt(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException e) {
             log.warn("Valor inválido en ZNode. Usando valor inicial.");
-            return Integer.parseInt(INITIAL_SEQUENCE_VALUE);
+            return FIRST_RANGE_START_VALUE;
         }
     }
 }
