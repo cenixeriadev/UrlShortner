@@ -1,7 +1,6 @@
 services:
   backend:
     build: backend
-    image: 'docker-spring-boot-postgres:latest'
     container_name: backend
     ports:
       - "8081:8081"
