@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// Servicio de lectura y escritura (Read and Write API)
+
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/read")
@@ -26,7 +26,7 @@ public class ReadController {
         this.urlRepository = urlRepository;
     }
     @GetMapping("/shorten/{shortcode}")
-    public ResponseEntity<?> getOriginalUrl(@PathVariable String shortcode) {
+    public ResponseEntity<?> getUrl(@PathVariable String shortcode) {
         
         String cachedValue = redisService.getFromCache(shortcode);
         if (cachedValue != null && !cachedValue.isEmpty()) {

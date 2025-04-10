@@ -21,14 +21,14 @@ public class WriteController {
         this.urlShortnerService = urlShortnerService;
     }
     @PostMapping("/shorten")
-    public ResponseEntity<?> createShortUrl(@RequestBody  ShortenRequest request){
+    public ResponseEntity<?> createShortCode(@RequestBody  ShortenRequest request){
         
         if (request == null || request.url() == null || request.url().isEmpty()) {
             log.error("Error generating short code");
             throw new BadRequestException("The URL can't be null or void");
         }
-        String shortUrl = urlShortnerService.generateShortCode(request.url());
-        return ResponseEntity.status(HttpStatus.CREATED).body(shortUrl);
+        String shortCode = urlShortnerService.generateShortCode(request.url());
+        return ResponseEntity.status(HttpStatus.CREATED).body(shortCode);
     }
     @DeleteMapping("/shorten/{shortcode}")
     public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
