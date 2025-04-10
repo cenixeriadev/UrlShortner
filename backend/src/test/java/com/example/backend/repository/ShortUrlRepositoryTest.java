@@ -1,13 +1,11 @@
-package com.example.backend;
+package com.example.backend.repository;
 
 import com.example.backend.entity.ShortUrl;
-import com.example.backend.repository.ShortUrlRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -17,18 +15,15 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-@ActiveProfiles("test")
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-class BackendApplicationTests {
-
+public class ShortUrlRepositoryTest {
     @Autowired
     private ShortUrlRepository shortUrlRepository;
     @Test
     void testSaveAndFindUrl() {
         // Arrange
-        String url = "https://example.com";
+        String url = "https://www.example.com";
         String shortcode = "abc123";
 
         // Act
@@ -40,7 +35,7 @@ class BackendApplicationTests {
         savedUrl.setShortCode(shortcode);
         savedUrl.setCreatedAt(createdAt);
         savedUrl.setUpdateAt(updated);
-        
+
         shortUrlRepository.save(savedUrl);
 
         Optional<ShortUrl> foundUrl = shortUrlRepository.findByShortCode(shortcode);
@@ -49,10 +44,4 @@ class BackendApplicationTests {
         assertTrue(foundUrl.isPresent());
         assertEquals(url, foundUrl.get().getUrl());
     }
-
-    @Test
-    void contextLoads() {
-    }
-    
-
 }
