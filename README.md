@@ -1,9 +1,9 @@
 # URL Shortener Service
 
-A robust backend service that shortens long URLs into unique, compact codes. Built with Spring Boot, the service uses PostgreSQL for persistence, Redis for caching, and ZooKeeper (via Apache Curator) to generate unique, incremental sequences. The code is organized using a layered architecture (controllers, services, and repositories) and is designed to scale.
+A robust backend service that shortens long URLs into unique, compact codes. Built with Spring Boot, the service uses PostgresSQL for persistence, Redis for caching, and ZooKeeper (via Apache Curator) to generate unique, incremental sequences. The code is organized using a layered architecture (controllers, services, and repositories) and is designed to scale.
 
 > [!NOTE]  
-> This project has been designed with potential extension towards a microservices architecture. Although it runs as a single application now, the separation of concerns makes it easy to integrate an API Gateway and load balancing if needed.
+> This project has been designed with potential extension towards a microservice's architecture. Although it runs as a single application now, the separation of concerns makes it easy to integrate an API Gateway and load balancing if needed.
 
 ---
 
@@ -27,7 +27,7 @@ A robust backend service that shortens long URLs into unique, compact codes. Bui
 - **URL Shortening:** Generate a unique, compact code for any long URL using Base62 encoding of an incremental sequence.
 - **Redirection:** Upon receiving a short code, the service redirects to the original URL.
 - **Access Statistics:** Tracks the number of times each short URL has been accessed.
-- **Caching:** Uses Redis to cache URL lookups for faster redirection and reduced load on PostgreSQL.
+- **Caching:** Uses Redis to cache URL lookups for faster redirection and reduced load on PostgresSQL.
 - **Distributed Coordination:** Uses ZooKeeper for generating unique sequences in a distributed environment.
 - **Layered Architecture:** Separation of concerns among controllers (REST endpoints), services (business logic), and repositories (data persistence).
 
@@ -53,7 +53,7 @@ This system follows a scalable and fault-tolerant architecture composed of sever
   Contains the business logic:
   - Generates short codes using Base62 encoding of sequences from ZooKeeper.
   - Interacts with Redis to cache lookups and statistics.
-  - Persists data into PostgreSQL via repositories.
+  - Persists data into PostgresSQL via repositories.
 
 - **Repository Layer:**  
   Uses Spring Data JPA for CRUD operations on URL mappings and statistics.
@@ -70,7 +70,7 @@ This system follows a scalable and fault-tolerant architecture composed of sever
 
 - **Java 21**
 - **Spring Boot** with Spring WebFlux (for reactive endpoints)  
-- **Spring Data JPA** (with PostgreSQL)
+- **Spring Data JPA** (with PostgresSQL)
 - **Redis** (for caching)
 - **ZooKeeper (Apache Curator)** (for distributed sequence generation)
 - **Maven** for build and dependency management
@@ -90,7 +90,7 @@ Below are the key endpoints provided by the service, along with detailed explana
   
   **Description:**
   
-  Accepts a JSON payload containing a URL to be shortened. The service generates a unique short code (using ZooKeeper for sequence generation and Base62 encoding) and stores the mapping in PostgreSQL. It also caches the result in Redis.
+  Accepts a JSON payload containing a URL to be shortened. The service generates a unique short code (using ZooKeeper for sequence generation and Base62 encoding) and stores the mapping in PostgresSQL. It also caches the result in Redis.
   
   **Example Request Body:**
   
@@ -138,11 +138,11 @@ Below are the key endpoints provided by the service, along with detailed explana
   
   **Description:**
   
-  Retrieves the original URL for a given short code. The controller first checks Redis for a cached entry; if not found, it falls back to fetching from PostgreSQL. It also increments the access count.
+  Retrieves the original URL for a given short code. The controller first checks Redis for a cached entry; if not found, it falls back to fetching from PostgresSQL. It also increments the access count.
 
   **Response:**
   
-  Returns a HTTP 302 Found status with the Location header set to the original URL to trigger a client redirection.
+  Returns an HTTP 200 OK status with the Location header set to the original URL to trigger a client redirection.
   
 - **GET `/api/v1/read/shorten/{shortcode}/stats`**
   
@@ -184,7 +184,7 @@ Below are the key endpoints provided by the service, along with detailed explana
   Run the Application: Open the project in your IDE (e.g., IntelliJ IDEA) and run the main class (BackendApplication.java).
   
 > [!WARNING]
->  Ensure that PostgreSQL, Redis, and ZooKeeper services are running on their default ports (or update the configuration accordingly).
+>  Ensure that PostgresSQL, Redis, and ZooKeeper services are running on their default ports (or update the configuration accordingly).
 
 ### Running via Maven CLI
 
@@ -213,19 +213,23 @@ Below are the key endpoints provided by the service, along with detailed explana
 
   - **Ensure Docker and Docker Compose Are Installed.**
 
-- **Verify Your docker-compose.yml is Configured Correctly:**
-      The Docker Compose file should include services for the backend, PostgreSQL, Redis, and ZooKeeper. Here’s an example:
   
-   ```yaml
-    version: '3.8'
-        
+  - **Verify Your docker-compose.yml is Configured Correctly:**
+
+    The Docker Compose file should include services for the backend, PostgresSQL, Redis, and ZooKeeper. Here’s an example:
+
+     ```yaml
+        version: '3.8' 
         services:
+    
           backend:
+          
             build: .
+          
             ports:
               - "8080:8080"
             env_file:
-              - .env
+                - .env
             environment:
               - DB_USER=${DB_USER}
               - DB_PASSWORD=${DB_PASSWORD}
@@ -237,12 +241,14 @@ Below are the key endpoints provided by the service, along with detailed explana
         
           db:
             image: postgres:16
+            
             env_file:
               - .env
             environment:
               POSTGRES_USER: ${DB_USER}
               POSTGRES_PASSWORD: ${DB_PASSWORD}
               POSTGRES_DB: your_database_name
+            
             ports:
               - "5432:5432"
             volumes:
@@ -269,11 +275,11 @@ Below are the key endpoints provided by the service, along with detailed explana
         
         volumes:
           pgdata:
-   ```    
-- **Start the Services:**
-   ```bash
-   docker-compose up --build
-   ```
+     ```    
+  - **Start the Services:**
+     ```bash
+     docker-compose up --build
+     ```
 
 ## Testing
 
