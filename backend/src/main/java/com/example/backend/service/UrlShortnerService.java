@@ -1,12 +1,15 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.ShortUrl;
+import com.example.backend.exception.BadRequestException;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.ShortUrlRepository;
+import com.example.backend.utils.ValidaterUrl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -30,6 +33,13 @@ public class UrlShortnerService {
     @Transactional
     public String generateShortCode(String url){
         log.info("This is the originalURL: {}", url);
+        if ( url == null || url.isEmpty()) {
+            log.error("Error generating short code");
+            throw new BadRequestException("The URL can't be null or void");
+        }else if(!ValidaterUrl.isValidURL(url)) {
+            log.error("Error generating short code by invalid url");
+            throw new BadRequestException("Invalid Url");
+        }
         String shortCode = zooKeeperService.getNextShortCode();
         
         log.info("Get nextSequence");
