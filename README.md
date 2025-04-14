@@ -2,8 +2,7 @@
 
 A robust backend service that shortens long URLs into unique, compact codes. Built with Spring Boot, the service uses PostgresSQL for persistence, Redis for caching, and ZooKeeper (via Apache Curator) to generate unique, incremental sequences. The code is organized using a layered architecture (controllers, services, and repositories) and is designed to scale.
 
-> [!NOTE]  
-> This project has been designed with potential extension towards a microservice's architecture. Although it runs as a single application now, the separation of concerns makes it easy to integrate an API Gateway and load balancing if needed.
+
 
 ---
 
