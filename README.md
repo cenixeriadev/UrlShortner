@@ -1,4 +1,5 @@
 # URL Shortener Service
+[![CodeQL Advanced](https://github.com/cenixeriadev/UrlShortner/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/cenixeriadev/UrlShortner/actions/workflows/codeql.yml)
 
 A robust backend service that shortens long URLs into unique, compact codes. Built with Spring Boot, the service uses PostgresSQL for persistence, Redis for caching, and ZooKeeper (via Apache Curator) to generate unique, incremental sequences. The code is organized using a layered architecture (controllers, services, and repositories) and is designed to scale.
 
