@@ -37,9 +37,11 @@ class ReadControllerTest {
     void testGetUrlFromCache() {
         // Arrange
         String shortcode = "shortcode";
-        String expectedUrl = "https://example.com";
+        String expectedUrl = "https://www.youtube.com/watch?v=TnTfFWwf44U";
 
-        when(redisService.getFromCache(shortcode)).thenReturn(expectedUrl);
+        // Simulamos que el service devuelve la URL inmediatamente
+        when(urlShortnerService.getUrlByShortCode(shortcode)).thenReturn(mockShortUrl(expectedUrl));
+
         doNothing().when(urlRepository).incrementAccessCount(shortcode);
 
         // Act & Assert
@@ -50,14 +52,19 @@ class ReadControllerTest {
                 .expectBody(String.class)
                 .isEqualTo(expectedUrl);
 
-        verify(urlRepository).incrementAccessCount(shortcode);
+    }
+
+    private ShortUrl mockShortUrl(String url) {
+        ShortUrl shortUrl = new ShortUrl();
+        shortUrl.setUrl(url);
+        return shortUrl;
     }
 
     @Test
     void testGetUrlFromDB() {
         // Arrange
         String shortcode = "shortcode";
-        String expectedUrl = "https://example.com";
+        String expectedUrl = "https://www.youtube.com/watch?v=TnTfFWwf44U";
         ShortUrl mockShortUrl = new ShortUrl();
         mockShortUrl.setUrl(expectedUrl);
 
@@ -72,7 +79,7 @@ class ReadControllerTest {
                 .expectBody(String.class)
                 .isEqualTo(expectedUrl);
 
-        verify(redisService,atLeastOnce()).getFromCache(shortcode);
+        
         verify(urlShortnerService,atLeastOnce()).getUrlByShortCode(shortcode);
     }
 

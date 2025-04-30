@@ -28,7 +28,7 @@ class WriteControllerTest {
 
     @Test
     void testCreateShortUrl() {
-        String url = "https://www.example.com";
+        String url = "https://www.youtube.com/watch?v=TnTfFWwf44U";
         when(urlShortnerService.generateShortCode(url)).thenReturn("generateShortCodeResponse");
 
         ResponseEntity<?> result = writeController.createShortCode(new ShortenRequest(url));
