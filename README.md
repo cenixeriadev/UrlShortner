@@ -19,6 +19,7 @@ A robust backend service that shortens long URLs into unique, compact codes. Bui
   - [Running via Maven CLI](#running-via-maven-cli)
   - [Running with Docker Compose](#running-with-docker-compose)
 - [Testing](#testing)
+- [API Documentation](#api-documentation)
 - [License](#license)
 - [Contact](#contact)
 
@@ -293,6 +294,22 @@ Below are the key endpoints provided by the service, along with detailed explana
 >[!NOTE]
 >Integration tests use an embedded H2 database (configured in application-test.properties under src/test/resources), while unit tests use Mockito to isolate components.
 
+## API Documentation
+The API documentation is available through Swagger , a tool that allows you to visualize and test endpoints interactively. Once the project is running, you can access the Swagger UI at the following URL: 
+ 
+ 
+    http://localhost:8081/swagger-ui.html
+ 
+ 
+Steps to Access the Documentation: 
+
+- Ensure the project is up and running. If you're using Docker Compose, follow the instructions in the Running with Docker Compose  section.
+- Open a web browser and navigate to the provided URL.
+- Explore the available endpoints and test different operations directly from the interface.
+     
+>[!NOTE]
+>The above URL (http://localhost:8081/swagger-ui.html) is valid only when running the project locally. If the project is deployed in a different environment, make sure to adjust the URL accordingly. 
+     
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
