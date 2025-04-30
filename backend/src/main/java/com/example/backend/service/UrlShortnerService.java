@@ -26,10 +26,23 @@ public class UrlShortnerService {
     private final ZooKeeperService zooKeeperService;
     
     public ShortUrl getUrlByShortCode(String shortCode) {
-        log.info("Looking up URL by short code: {}", shortCode);
-        shortUrlRepository.incrementAccessCount(shortCode);
-        return shortUrlRepository.findByShortCode(shortCode).orElseThrow(() -> new ResourceNotFoundException("Url not found"));
-    }
+        String cachedValue = redisService.getFromCache(shortCode);
+        if (cachedValue != null && !cachedValue.isEmpty()) {
+            log.info("Retrieving original url from cache");
+            shortUrlRepository.incrementAccessCount(shortCode);
+            ShortUrl Url = new ShortUrl();
+            Url.setShortCode(shortCode);
+            Url.setUrl(cachedValue);
+            return Url;
+        }
+        log.info("Retrieving original url from database");
+        return shortUrlRepository.findByShortCode(shortCode)
+                .map(shortUrl->{
+                    shortUrlRepository.incrementAccessCount(shortCode);
+                    redisService.saveToCache(shortCode , shortUrl.getUrl());
+                    return shortUrl;
+                }).orElseThrow(()-> new ResourceNotFoundException("Url not found"));
+    }//TODO: Enhance the logic in this function
     @Transactional
     public String generateShortCode(String url){
         log.info("This is the originalURL: {}", url);

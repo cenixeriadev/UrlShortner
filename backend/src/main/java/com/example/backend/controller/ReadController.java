@@ -27,14 +27,6 @@ public class ReadController {
     }
     @GetMapping("/shorten/{shortcode}")
     public ResponseEntity<?> getUrl(@PathVariable String shortcode) {
-        
-        String cachedValue = redisService.getFromCache(shortcode);
-        if (cachedValue != null && !cachedValue.isEmpty()) {
-            log.info("Retrieving original url from cache");
-            urlRepository.incrementAccessCount(shortcode);
-            return ResponseEntity.ok(cachedValue);
-        }
-        log.info("Retrieving original url from database");
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);    
         return ResponseEntity.ok(shortUrl.getUrl());
     }
