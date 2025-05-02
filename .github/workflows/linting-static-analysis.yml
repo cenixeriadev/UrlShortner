@@ -1,0 +1,39 @@
+name: Linting and Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: maven-
+
+      - name: Run Checkstyle
+        working-directory: backend
+        run: mvn checkstyle:check
+
+      - name: Run PMD
+        working-directory: backend
+        run: mvn pmd:check
+
+      - name: Run FindBugs
+        working-directory: backend
+        run: mvn findbugs:findbugs
