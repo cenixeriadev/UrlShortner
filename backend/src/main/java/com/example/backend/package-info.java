@@ -25,6 +25,8 @@
  *   for common operations.</li>
  * </ul>
  *
+ * @author cenixeriadev
+ *
  * @see com.example.backend.controller
  * @see com.example.backend.dto
  * @see com.example.backend.entity
