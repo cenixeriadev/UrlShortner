@@ -1,44 +1,88 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.ShortenRequest;
-
 import com.example.backend.service.UrlShortnerService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
-
-
-
-
+/**
+ * A REST controller responsible for handling write operations
+ * related to shortened URLs.
+ * <p>
+ * This controller provides endpoints to create, update,
+ * and delete shortened URLs. It
+ * interacts with the {@link UrlShortnerService} to perform these operations.
+ *
+ * @see UrlShortnerService
+ */
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/write")
-public class WriteController {
-    
+@RequiredArgsConstructor
+public final class WriteController {
+
+    /**
+     * Service responsible for managing URL shortening and related operations.
+     */
     private final UrlShortnerService urlShortnerService;
-    @Autowired
-    public WriteController(UrlShortnerService urlShortnerService) {
-        this.urlShortnerService = urlShortnerService;
-    }
+    /**
+     * Creates a new shortcode for the provided URL.
+     *
+     * @param request the request object containing
+     *                the original URL to be shortened
+     * @return a {@link ResponseEntity} containing the generated shortcode with
+     *         HTTP status 201 (CREATED)
+     * @see UrlShortnerService#generateShortCode(String)
+     */
     @PostMapping("/shorten")
-    public ResponseEntity<?> createShortCode(@RequestBody  ShortenRequest request) {
+    public ResponseEntity<?> createShortCode(@RequestBody
+                                                 final ShortenRequest request) {
         String shortCode = urlShortnerService.generateShortCode(request.url());
         return ResponseEntity.status(HttpStatus.CREATED).body(shortCode);
     }
+
+    /**
+     * Deletes a shortened URL identified by the given shortcode.
+     *
+     * @param shortcode the shortcode identifying
+     *                  the shortened URL to delete
+     * @return a {@link ResponseEntity} with HTTP status 204 (NO_CONTENT)
+     * and a success message
+     * @see UrlShortnerService#deleteUrlByShortCode(String)
+     */
     @DeleteMapping("/shorten/{shortcode}")
-    public ResponseEntity<?> deleteShorten(@PathVariable  String shortcode){
+    public ResponseEntity<?> deleteShorten(@PathVariable
+                                               final String shortcode) {
         urlShortnerService.deleteUrlByShortCode(shortcode);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Short URL deleted successfully");
-        
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body("Short URL deleted successfully");
     }
+
+    /**
+     * Updates the original URL associated with the given shortcode.
+     *
+     * @param shortcode the shortcode identifying the shortened URL to update
+     * @param request   the request object containing the new URL
+     *                  to associate with the shortcode
+     * @return a {@link ResponseEntity} with HTTP status 200 (OK)
+     * and a success message
+     * @see UrlShortnerService#updateUrlByShortCode(String, String)
+     */
     @PutMapping("/shorten/{shortcode}")
-    public ResponseEntity<?> updateShorten(@PathVariable String shortcode, @RequestBody ShortenRequest request) {
+    public ResponseEntity<?> updateShorten(@PathVariable final String shortcode,
+                                           @RequestBody final ShortenRequest
+                                                   request
+        ) {
         urlShortnerService.updateUrlByShortCode(shortcode, request.url());
         return ResponseEntity.ok("Short URL updated successfully");
-
-        
     }
 }

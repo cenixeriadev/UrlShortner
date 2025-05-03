@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!-- Configuración general -->
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- Regla de longitud de línea -->
+    <module name="LineLength">
+        <property name="max" value="80"/> <!-- Longitud máxima de línea -->
+        <property name="ignorePattern" value="^package.*|^import.*"/> <!-- Ignora líneas de import y package -->
+    </module>
+    
+
+    <!-- Excluye archivos específicos (por ejemplo, 'module-info.java') -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$|Base62Converter\.java$|BackendApplication\.java$"/>
+    </module>
+
+    <!-- Reglas generales -->
+    <module name="TreeWalker">
+
+        <!-- Reglas de Javadoc -->
+        <module name="JavadocMethod"/>
+        <module name="JavadocType"/>
+        <module name="JavadocVariable"/>
+
+        <!-- Reglas de nombres -->
+        <module name="ConstantName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName"/>
+        <module name="MethodName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+
+        <!-- Reglas de importaciones -->
+        <module name="AvoidStarImport"/>
+        <module name="IllegalImport"/>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+
+        <!-- Reglas de tamaño -->
+        <module name="MethodLength">
+            <property name="max" value="80"/> <!-- Longitud máxima de método -->
+        </module>
+        <module name="ParameterNumber">
+            <property name="max" value="7"/> <!-- Máximo número de parámetros -->
+        </module>
+
+        <!-- Reglas de espacios en blanco -->
+        <module name="EmptyForIteratorPad"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="ParenPad"/>
+        <module name="WhitespaceAround"/>
+
+        <!-- Reglas de diseño -->
+        <module name="DesignForExtension"/>
+        <module name="FinalClass"/>
+        <module name="HideUtilityClassConstructor"/>
+        <module name="VisibilityModifier"/>
+
+        <!-- Reglas de codificación -->
+        <module name="EmptyStatement"/>
+        <module name="EqualsHashCode"/>
+        <module name="HiddenField"/>
+        <module name="MagicNumber"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- Otras reglas -->
+        <module name="TodoComment"/>
+        <module name="UpperEll"/>
+    </module>
+</module>

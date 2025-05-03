@@ -1,37 +1,58 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.ShortUrl;
-import com.example.backend.repository.ShortUrlRepository;
-import com.example.backend.service.RedisService;
 import com.example.backend.service.UrlShortnerService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+/**
+ * A REST controller responsible for handling read
+ * operations related to shortened URLs.
+ * <p>
+ * This controller provides endpoints to retrieve
+ * the original URL and statistics (e.g., access count)
+ * associated with a given shortcode.
+ * It interacts with services such as {@link UrlShortnerService}
+ * @see UrlShortnerService
+ */
 
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/read")
-public class ReadController {
-    
-    private final UrlShortnerService urlShortnerService;
-    private final RedisService redisService;
-    private final ShortUrlRepository urlRepository;
+@RequiredArgsConstructor
+public final class ReadController {
 
-    @Autowired
-    public ReadController(UrlShortnerService urlShortnerService , RedisService redisService , ShortUrlRepository urlRepository) {
-        this.urlShortnerService = urlShortnerService;
-        this.redisService = redisService;
-        this.urlRepository = urlRepository;
-    }
+    /**
+     * Service responsible for managing URL shortening and retrieval logic.
+     */
+    private final UrlShortnerService urlShortnerService;
+    /**
+     * Retrieves the original URL associated with the given shortcode.
+     *
+     * @param shortcode the shortcode identifying the shortened URL
+     * @return a {@link ResponseEntity} containing the original URL if found
+     * @see UrlShortnerService#getUrlByShortCode(String)
+     */
     @GetMapping("/shorten/{shortcode}")
-    public ResponseEntity<?> getUrl(@PathVariable String shortcode) {
-        ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);    
+    public ResponseEntity<?> getUrl(@PathVariable final String shortcode) {
+        ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
         return ResponseEntity.ok(shortUrl.getUrl());
     }
+
+    /**
+     * Retrieves the access count statistics for the given shortcode.
+     *
+     * @param shortcode the shortcode identifying the shortened URL
+     * @return a {@link ResponseEntity} containing the access count of
+     * the shortened URL
+     * @see UrlShortnerService#getUrlByShortCode(String)
+     */
     @GetMapping("/shorten/{shortcode}/stats")
-    public ResponseEntity<?> getStats(@PathVariable String shortcode) {
+    public ResponseEntity<?> getStats(@PathVariable final String shortcode) {
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
         return ResponseEntity.ok(shortUrl.getAccessCount());
     }
