@@ -1,4 +1,5 @@
 /**
+ * @author  Anthony Ramos Roncal(cenixeria dev)
  * The root package for the backend application.
  * <p>
  * This package contains all the components of the
