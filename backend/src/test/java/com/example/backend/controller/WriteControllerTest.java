@@ -58,7 +58,7 @@ class WriteControllerTest {
 
         
         Assertions.assertEquals(
-                ResponseEntity.ok().body("Short URL updated successfully"), 
+                ResponseEntity.ok().body("URL updated successfully"), 
                 result
         );
     }
