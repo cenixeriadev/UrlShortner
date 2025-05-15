@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.ShortUrl;
 import com.example.backend.service.UrlShortnerService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ public final class ReadController {
      * @return a {@link ResponseEntity} containing the original URL if found
      * @see UrlShortnerService#getUrlByShortCode(String)
      */
+    @Tag(name = "get",description = "Get the url by shortcode")
     @GetMapping("/shorten/{shortcode}")
     public ResponseEntity<?> getUrl(@PathVariable final String shortcode) {
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
@@ -51,6 +53,8 @@ public final class ReadController {
      * the shortened URL
      * @see UrlShortnerService#getUrlByShortCode(String)
      */
+    @Tag(name = "get",
+            description =  "Gets the number of times the URL was accessed")
     @GetMapping("/shorten/{shortcode}/stats")
     public ResponseEntity<?> getStats(@PathVariable final String shortcode) {
         ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);

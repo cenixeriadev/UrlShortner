@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.ShortenRequest;
 import com.example.backend.service.UrlShortnerService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,7 @@ public final class WriteController {
      *         HTTP status 201 (CREATED)
      * @see UrlShortnerService#generateShortCode(String)
      */
+    @Tag(name = "post",description = "Create shortcode for Url")
     @PostMapping("/shorten")
     public ResponseEntity<?> createShortCode(@RequestBody
                                                  final ShortenRequest request) {
@@ -59,6 +61,7 @@ public final class WriteController {
      * and a success message
      * @see UrlShortnerService#deleteUrlByShortCode(String)
      */
+    @Tag(name = "del",description =  "Delete Url by shortcode")
     @DeleteMapping("/shorten/{shortcode}")
     public ResponseEntity<?> deleteShorten(@PathVariable
                                                final String shortcode) {
@@ -77,12 +80,13 @@ public final class WriteController {
      * and a success message
      * @see UrlShortnerService#updateUrlByShortCode(String, String)
      */
+    @Tag(name = "put",description = "Update Url by shortcode")
     @PutMapping("/shorten/{shortcode}")
     public ResponseEntity<?> updateShorten(@PathVariable final String shortcode,
                                            @RequestBody final ShortenRequest
                                                    request
         ) {
         urlShortnerService.updateUrlByShortCode(shortcode, request.url());
-        return ResponseEntity.ok("Short URL updated successfully");
+        return ResponseEntity.ok("URL updated successfully");
     }
 }
