@@ -54,10 +54,10 @@ class ReadControllerTest {
 
     }
 
-    private ShortUrl mockShortUrl(String url) {
+    private String mockShortUrl(String url) {
         ShortUrl shortUrl = new ShortUrl();
         shortUrl.setUrl(url);
-        return shortUrl;
+        return shortUrl.getUrl();
     }
 
     @Test
@@ -69,7 +69,7 @@ class ReadControllerTest {
         mockShortUrl.setUrl(expectedUrl);
 
         when(redisService.getFromCache(shortcode)).thenReturn(null);
-        when(urlShortnerService.getUrlByShortCode(shortcode)).thenReturn(mockShortUrl);
+        when(urlShortnerService.getUrlByShortCode(shortcode)).thenReturn(mockShortUrl.getUrl());
 
         // Act & Assert
         webTestClient.get()
@@ -90,7 +90,7 @@ class ReadControllerTest {
         ShortUrl mockShortUrl = new ShortUrl();
         mockShortUrl.setAccessCount(5);
 
-        when(urlShortnerService.getUrlByShortCode(shortcode)).thenReturn(mockShortUrl);
+        when(urlShortnerService.getStatsByShortCode(shortcode)).thenReturn(mockShortUrl.getAccessCount());
 
         // Act & Assert
         webTestClient.get()

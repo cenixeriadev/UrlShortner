@@ -55,27 +55,42 @@ public class UrlShortnerService {
      * the database and updates the cache with the retrieved URL.
      *
      * @param shortCode the shortcode identifying the URL
-     * @return the {@link ShortUrl} entity containing the original URL
+     * @return the {@link String} original URL
      * @throws ResourceNotFoundException if the shortcode does not exist
      */
-    public ShortUrl getUrlByShortCode(final String shortCode) {
+    public String getUrlByShortCode(final String shortCode) {
         String cachedValue = redisService.getFromCache(shortCode);
         if (cachedValue != null && !cachedValue.isEmpty()) {
             log.info("Retrieving original url from cache");
             shortUrlRepository.incrementAccessCount(shortCode);
-            ShortUrl tempUrl = new ShortUrl();
-            tempUrl.setShortCode(shortCode);
-            tempUrl.setUrl(cachedValue);
-            return tempUrl;
+            return cachedValue;
         }
         log.info("Retrieving original url from database");
         return shortUrlRepository.findByShortCode(shortCode)
                 .map(shortUrl -> {
                     shortUrlRepository.incrementAccessCount(shortCode);
                     redisService.saveToCache(shortCode, shortUrl.getUrl());
-                    return shortUrl;
+                    return shortUrl.getUrl();
                 }).orElseThrow(() ->
                         new ResourceNotFoundException("Url not found"));
+    }
+    /**
+     * Retrieves the access count associated with the given shortcode.
+     * <p>
+     * This method gets the number of times a URL
+     * is accessed based on a shortcode.
+     * @param shortCode the shortcode identifying the URL
+     * @return the {@link Integer} access count by url.
+     * @throws ResourceNotFoundException if the access count does not exist
+     */
+    public int getStatsByShortCode(final String shortCode) {
+        Optional<ShortUrl> tempShort = shortUrlRepository
+                .findByShortCode(shortCode);
+        if (tempShort.isPresent()) {
+            return tempShort.get().getAccessCount();
+        } else {
+            throw new ResourceNotFoundException("Url not found");
+        }
     }
     /**
      * Generates a shortcode for the given URL.

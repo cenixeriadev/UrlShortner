@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.entity.ShortUrl;
+
 import com.example.backend.service.UrlShortnerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +41,8 @@ public final class ReadController {
     @Tag(name = "get",description = "Get the url by shortcode")
     @GetMapping("/shorten/{shortcode}")
     public ResponseEntity<?> getUrl(@PathVariable final String shortcode) {
-        ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
-        return ResponseEntity.ok(shortUrl.getUrl());
+        String url = urlShortnerService.getUrlByShortCode(shortcode);
+        return ResponseEntity.ok(url);
     }
 
     /**
@@ -57,7 +57,7 @@ public final class ReadController {
             description =  "Gets the number of times the URL was accessed")
     @GetMapping("/shorten/{shortcode}/stats")
     public ResponseEntity<?> getStats(@PathVariable final String shortcode) {
-        ShortUrl shortUrl = urlShortnerService.getUrlByShortCode(shortcode);
-        return ResponseEntity.ok(shortUrl.getAccessCount());
+        int  count = urlShortnerService.getStatsByShortCode(shortcode);
+        return ResponseEntity.ok(count);
     }
 }
