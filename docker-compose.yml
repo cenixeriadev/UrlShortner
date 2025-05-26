@@ -14,11 +14,12 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://pg:5432/urlshort
     networks:
       - backend_network
     depends_on:
       pg:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       zookeeper:
@@ -26,6 +27,11 @@ services:
     volumes:
       - ./.env:/app/.env
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   pg:
     image: postgres:16
@@ -33,17 +39,22 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB : urlshort
+      POSTGRES_DB: urlshort
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
-      - backend_network  
+      - backend_network
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/db:/docker-entrypoint-initdb.d
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d urlshort"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -53,6 +64,11 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   zookeeper:
     image: zookeeper:3.9
@@ -73,12 +89,35 @@ services:
       - zkdata:/data
       - zkdatalog:/datalog
     restart: always
-    
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    networks:
+      - frontend_network
+      - backend_network
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=development
+    command: npm start
 
 volumes:
   pgdata:
   zkdata:
   zkdatalog:
+
 networks:
   backend_network:
+    driver: bridge
+    internal: false # Permite comunicación con frontend
+  frontend_network:
     driver: bridge
