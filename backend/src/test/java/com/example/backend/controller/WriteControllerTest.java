@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Map;
+
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -33,7 +35,7 @@ class WriteControllerTest {
 
         ResponseEntity<?> result = writeController.createShortCode(new ShortenRequest(url));
         Assertions.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        Assertions.assertEquals("generateShortCodeResponse", result.getBody());
+        Assertions.assertEquals(Map.of("shortcode" , "generateShortCodeResponse"), result.getBody());
 
     }
 
@@ -58,7 +60,7 @@ class WriteControllerTest {
 
         
         Assertions.assertEquals(
-                ResponseEntity.ok().body("URL updated successfully"), 
+                ResponseEntity.ok().body(Map.of("message" , "URL updated successfully")),
                 result
         );
     }
