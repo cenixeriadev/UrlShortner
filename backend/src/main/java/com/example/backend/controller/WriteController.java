@@ -51,7 +51,8 @@ public final class WriteController {
     public ResponseEntity<?> createShortCode(@RequestBody
                                                  final ShortenRequest request) {
         String shortCode = urlShortnerService.generateShortCode(request.url());
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("shortcode" , shortCode));
+        return ResponseEntity.status(HttpStatus.CREATED).
+                body(Map.of("shortcode", shortCode));
     }
 
     /**
@@ -89,6 +90,7 @@ public final class WriteController {
                                                    request
         ) {
         urlShortnerService.updateUrlByShortCode(shortcode, request.url());
-        return ResponseEntity.ok(Map.of("message" , "URL updated successfully"));
+        return ResponseEntity.ok(Map.
+                of("message", "URL updated successfully"));
     }
 }
