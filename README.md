@@ -56,7 +56,7 @@ This system follows a scalable and fault-tolerant architecture composed of sever
 - **Service Layer:**  
   Contains the business logic:
   - Generates short codes using Base62 encoding of sequences from ZooKeeper.
-  - Interacts with Redis to cache lookups and statistics.
+  - Interacts with Redis to cache lookups.
   - Persists data into PostgresSQL via repositories.
 
 - **Repository Layer:**  
@@ -220,66 +220,7 @@ Below are the key endpoints provided by the service, along with detailed explana
   
   - **Verify Your docker-compose.yml is Configured Correctly:**
 
-    The Docker Compose file should include services for the backend, PostgresSQL, Redis, and ZooKeeper. Here’s an example:
-
-     ```yaml
-        version: '3.8' 
-        services:
-    
-          backend:
-          
-            build: .
-          
-            ports:
-              - "8080:8080"
-            env_file:
-                - .env
-            environment:
-              - DB_USER=${DB_USER}
-              - DB_PASSWORD=${DB_PASSWORD}
-            depends_on:
-              - db
-              - redis
-              - zookeeper
-            restart: always
-        
-          db:
-            image: postgres:16
-            
-            env_file:
-              - .env
-            environment:
-              POSTGRES_USER: ${DB_USER}
-              POSTGRES_PASSWORD: ${DB_PASSWORD}
-              POSTGRES_DB: your_database_name
-            
-            ports:
-              - "5432:5432"
-            volumes:
-              - pgdata:/var/lib/postgresql/data
-              # Optionally mount SQL scripts for initialization:
-              # - ./db:/docker-entrypoint-initdb.d
-            restart: always
-        
-          redis:
-            image: redis:alpine
-            ports:
-              - "6379:6379"
-            restart: always
-        
-          zookeeper:
-            image: zookeeper:3.8
-            ports:
-              - "2181:2181"
-            environment:
-              ZOO_MY_ID: 1
-              ZOO_PORT: 2181
-              ZOO_SERVERS: server.1=0.0.0.0:2888:3888
-            restart: always
-        
-        volumes:
-          pgdata:
-     ```    
+    The Docker Compose file should include services for the backend, PostgresSQL, Redis, ZooKeeper.          
   - **Start the Services:**
      ```bash
      docker-compose up --build
