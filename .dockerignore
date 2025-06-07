@@ -14,6 +14,7 @@
 bin/
 **/target/
 
+node_modules/
 
 .env
 *.log
