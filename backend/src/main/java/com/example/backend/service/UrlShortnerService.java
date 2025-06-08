@@ -5,7 +5,6 @@ import com.example.backend.exception.BadRequestException;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.ShortUrlRepository;
 import com.example.backend.utils.ValidatorUrl;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,60 +18,54 @@ import java.util.UUID;
 /**
  * Service class for managing URL shortening operations.
  * <p>
- * This class provides methods to generate shortcodes,
- * retrieve URLs by shortcode, delete URLs,
- * and update URLs. It interacts with the database via
- * {@link ShortUrlRepository}, caches data
- * using {@link RedisService}, and generates unique
- * shortcodes using {@link ZooKeeperService}.
+ * This class extends {@link BaseUrlService} and provides
+ * functionality for:
+ * <ul>
+ *     <li>Generating shortcodes for URLs</li>
+ *     <li>Retrieving URLs by shortcode</li>
+ *     <li>Managing URL statistics</li>
+ *     <li>Updating and deleting shortened URLs</li>
+ * </ul>
+ * It integrates with multiple services for complete URL management.
  *
+ * @see com.example.backend.service.BaseUrlService
  * @see com.example.backend.repository.ShortUrlRepository
  * @see com.example.backend.service.RedisService
  * @see com.example.backend.service.ZooKeeperService
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class UrlShortnerService {
+public class UrlShortnerService extends BaseUrlService {
+
     /**
-     * Repository to interact with database and use his logic in this service.
-     */
-    private final ShortUrlRepository shortUrlRepository;
-    /**
-     * Service responsible for redis operations.
-     */
-    private final RedisService redisService;
-    /**
-     * Service responsible for generate shortcodes.
+     * ZooKeeper service for generating unique shortcodes.
      */
     private final ZooKeeperService zooKeeperService;
 
     /**
-     * Retrieves the original URL associated with the given shortcode.
-     * <p>
-     * This method first checks the Redis cache.
-     * If the URL is not found in the cache, it queries
-     * the database and updates the cache with the retrieved URL.
+     * Constructs a new UrlShortnerService with
+     * the required dependencies.
      *
-     * @param shortCode the shortcode identifying the URL
-     * @return the {@link String} original URL
-     * @throws ResourceNotFoundException if the shortcode does not exist
+     * @param shortUrlRepository repository for URL data access
+     * @param redisService service for cache operations
+     * @param zooKeeperServiceContruct for generating unique shortcodes
      */
-    public String getUrlByShortCode(final String shortCode) {
-        String cachedValue = redisService.getFromCache(shortCode);
-        if (cachedValue != null && !cachedValue.isEmpty()) {
-            log.info("Retrieving original url from cache");
-            shortUrlRepository.incrementAccessCount(shortCode);
-            return cachedValue;
-        }
-        log.info("Retrieving original url from database");
-        return shortUrlRepository.findByShortCode(shortCode)
-                .map(shortUrl -> {
-                    shortUrlRepository.incrementAccessCount(shortCode);
-                    redisService.saveToCache(shortCode, shortUrl.getUrl());
-                    return shortUrl.getUrl();
-                }).orElseThrow(() ->
-                        new ResourceNotFoundException("Url not found"));
+    public UrlShortnerService(ShortUrlRepository shortUrlRepository,
+                              RedisService redisService,
+                              ZooKeeperService zooKeeperServiceContruct) {
+        super(shortUrlRepository, redisService);
+        this.zooKeeperService = zooKeeperServiceContruct;
+    }
+
+    /**
+     * Retrieves the original URL for a shortcode, saving it to cache.
+     *
+     * @param shortCode the shortcode to resolve
+     * @return the original URL associated with the shortcode
+     * @throws RuntimeException if the URL is not found
+     */
+    public String getUrlByShortCode(String shortCode) {
+        return resolveUrl(shortCode, true);
     }
     /**
      * Retrieves the access count associated with the given shortcode.
@@ -84,7 +77,7 @@ public class UrlShortnerService {
      * @throws ResourceNotFoundException if the access count does not exist
      */
     public int getStatsByShortCode(final String shortCode) {
-        Optional<ShortUrl> tempShort = shortUrlRepository
+        Optional<ShortUrl> tempShort = getShortUrlRepository()
                 .findByShortCode(shortCode);
         if (tempShort.isPresent()) {
             return tempShort.get().getAccessCount();
@@ -123,8 +116,8 @@ public class UrlShortnerService {
         shortUrl.setUpdateAt(Timestamp.from(Instant.now()));
         shortUrl.setAccessCount(0);
 
-        shortUrlRepository.save(shortUrl);
-        redisService.saveToCache(shortCode, url);
+        getShortUrlRepository().save(shortUrl);
+        getRedisService().saveToCache(shortCode, url);
 
         return shortCode;
     }
@@ -140,10 +133,11 @@ public class UrlShortnerService {
     @Transactional
     public void deleteUrlByShortCode(final String shortCode) {
         log.info("Deleting URL by short code: {}", shortCode);
-        Optional<ShortUrl> url = shortUrlRepository.findByShortCode(shortCode);
+        Optional<ShortUrl> url = getShortUrlRepository().
+                findByShortCode(shortCode);
         if (url != null && url.isPresent()) {
-            shortUrlRepository.deleteByShortCode(shortCode);
-            redisService.deleteFromCache(shortCode);
+            getShortUrlRepository().deleteByShortCode(shortCode);
+            getRedisService().deleteFromCache(shortCode);
         } else {
             log.error("Error deleting url by short code : {}", shortCode);
             throw new ResourceNotFoundException("Shortcode doesn't exist: "
@@ -165,17 +159,17 @@ public class UrlShortnerService {
         log.info("Updating URL by short code: {} to new long URL: {}",
                 shortCode, newLongUrl);
         Optional<ShortUrl> optionalUrl =
-                shortUrlRepository.findByShortCode(shortCode);
+                getShortUrlRepository().findByShortCode(shortCode);
         if (optionalUrl.isEmpty()) {
             log.error("Error updating url by short code: {}", shortCode);
             throw new ResourceNotFoundException("Shortcode doesn't exist: "
                     + shortCode);
         }
-        shortUrlRepository.updateUrl(newLongUrl, shortCode);
-        shortUrlRepository.updateUpdateAt(
+        getShortUrlRepository().updateUrl(newLongUrl, shortCode);
+        getShortUrlRepository().updateUpdateAt(
                 Timestamp.from(Instant.now()),
                 shortCode
         );
-        redisService.saveToCache(shortCode, newLongUrl);
+        getRedisService().saveToCache(shortCode, newLongUrl);
     }
 }
