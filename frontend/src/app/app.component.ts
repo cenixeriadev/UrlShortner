@@ -5,19 +5,12 @@ import { CommonModule } from '@angular/common';
 
 interface ShortenRequest {
   url: string;
-  customShortcode?: string;
 }
 
 interface ShortenResponse {
   shortcode: string;
-  url?: string;
 }
 
-interface StatsResponse {
-  startDate: string;
-  lastSeenDate: string;
-  redirectCount: number;
-}
 
 @Component({
   selector: 'app-root',
@@ -42,7 +35,7 @@ export class AppComponent implements OnInit {
   // Results
   shortenResult: ShortenResponse | null = null;
   urlResult: string | null = null;
-  statsResult: StatsResponse | null = null;
+  statsResult: number | null = null;
 
   // Loading states
   isShortening = false;
@@ -116,9 +109,6 @@ export class AppComponent implements OnInit {
       url: this.shortenForm.value.url
     };
 
-    if (this.shortenForm.value.customShortcode) {
-      request.customShortcode = this.shortenForm.value.customShortcode;
-    }
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -172,7 +162,7 @@ export class AppComponent implements OnInit {
 
     const shortcode = this.getStatsForm.value.shortcode;
 
-    this.http.get<StatsResponse>(`${this.API_BASE}/read/shorten/${shortcode}/stats`)
+    this.http.get<number>(`${this.API_BASE}/read/shorten/${shortcode}/stats`)
       .subscribe({
         next: (response) => {
           this.statsResult = response;
