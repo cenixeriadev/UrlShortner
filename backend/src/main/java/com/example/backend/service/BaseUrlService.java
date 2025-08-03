@@ -1,4 +1,5 @@
 package com.example.backend.service;
+import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.repository.ShortUrlRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -59,7 +60,7 @@ public abstract class BaseUrlService {
                     }
                     return shortUrl.getUrl();
                 })
-                .orElseThrow(() -> new RuntimeException("Url not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Url not found"));
     }
 
     /**
