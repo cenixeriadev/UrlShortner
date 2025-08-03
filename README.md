@@ -107,6 +107,16 @@ Below are the key endpoints provided by the service, along with detailed explana
   **Response:**
   
   Returns a 201 Created status with the generated short code in the response body, e.g., "1Z3".
+  ```json
+  {
+    "id": 2,
+    "url": "https://example.com/very-long-url",
+    "shortCode": "bqcU",
+    "createdAt": "2025-08-03T23:28:47.713+00:00",
+    "updateAt": "2025-08-03T23:28:47.715+00:00",
+    "accessCount": 0
+  }
+  ```
 
 - **PUT `/api/v1/write/shorten/{shortcode}`**
   
@@ -124,7 +134,13 @@ Below are the key endpoints provided by the service, along with detailed explana
   }
   ```
   **Response:**
-  Returns a 200 OK with a confirmation message like "Short URL updated successfully".
+  Returns a 200 OK with a confirmation message.
+
+  ```json
+  {
+    "message": "URL updated successfully"
+  }
+  ```
   
 - **DELETE `/api/v1/write/shorten/{shortcode}`**
   
@@ -146,7 +162,7 @@ Below are the key endpoints provided by the service, along with detailed explana
 
   **Response:**
   
-  Returns an HTTP 200 OK status with the Location header set to the original URL to trigger a client redirection.
+  Returns an HTTP 200 OK status with the original URL.
   
 - **GET `/api/v1/read/shorten/{shortcode}/stats`**
   
@@ -156,12 +172,16 @@ Below are the key endpoints provided by the service, along with detailed explana
 
   **Response:**
   
-  Returns a JSON object with statistics:
+  Returns a JSON object with  the accesCount in the response body:
   
-  ```json
-  {
-    "accessCount": 25
-  }
+  ```json{
+    "id": 3,
+    "url": "https://example.com/very-long-url",
+    "shortCode": "bQdP",
+    "createdAt": "2025-08-03T23:33:54.213+00:00",
+    "updateAt": "2025-08-03T23:33:54.213+00:00",
+    "accessCount": 1
+}
   ```
 
 
