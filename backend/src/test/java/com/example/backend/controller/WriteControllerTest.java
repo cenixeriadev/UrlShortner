@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.ShortenRequest;
+import com.example.backend.entity.ShortUrl;
 import com.example.backend.service.UrlShortnerService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +32,14 @@ class WriteControllerTest {
     @Test
     void testCreateShortUrl() {
         String url = "https://www.youtube.com/watch?v=TnTfFWwf44U";
-        when(urlShortnerService.generateShortCode(url)).thenReturn("generateShortCodeResponse");
+        ShortUrl shortUrl = new ShortUrl();
+        shortUrl.setShortCode("abc123");
+        shortUrl.setUrl(url);
+        when(urlShortnerService.generateShortCode(url)).thenReturn(shortUrl);
 
         ResponseEntity<?> result = writeController.createShortCode(new ShortenRequest(url));
         Assertions.assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        Assertions.assertEquals(Map.of("shortcode" , "generateShortCodeResponse"), result.getBody());
+        Assertions.assertEquals(shortUrl, result.getBody());
 
     }
 

@@ -14,6 +14,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -90,15 +93,15 @@ class ReadControllerTest {
         ShortUrl mockShortUrl = new ShortUrl();
         mockShortUrl.setAccessCount(5);
 
-        when(urlShortnerService.getStatsByShortCode(shortcode)).thenReturn(mockShortUrl.getAccessCount());
+        when(urlShortnerService.getStatsByShortCode(shortcode)).thenReturn(Optional.of(mockShortUrl));
 
         // Act & Assert
         webTestClient.get()
                 .uri("/api/v1/read/shorten/{shortcode}/stats", shortcode)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Integer.class)
-                .isEqualTo(5);
+                .expectBody(ShortUrl.class)
+                .value(shortUrl -> assertEquals(5, shortUrl.getAccessCount()));
     }
 }
 @TestConfiguration
