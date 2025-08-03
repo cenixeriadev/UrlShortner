@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 
+import com.example.backend.entity.ShortUrl;
 import com.example.backend.service.UrlShortnerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
+
 /**
  * A REST controller responsible for handling read
  * operations related to shortened URLs.
@@ -57,7 +61,7 @@ public final class ReadController {
             description =  "Gets the number of times the URL was accessed")
     @GetMapping("/shorten/{shortcode}/stats")
     public ResponseEntity<?> getStats(@PathVariable final String shortcode) {
-        int  count = urlShortnerService.getStatsByShortCode(shortcode);
+        Optional<ShortUrl> count = urlShortnerService.getStatsByShortCode(shortcode);
         return ResponseEntity.ok(count);
     }
 }

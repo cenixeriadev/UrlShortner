@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Service class for managing URL shortening operations.
@@ -73,14 +72,14 @@ public class UrlShortnerService extends BaseUrlService {
      * This method gets the number of times a URL
      * is accessed based on a shortcode.
      * @param shortCode the shortcode identifying the URL
-     * @return the {@link Integer} access count by url.
+     * @return the {@link Optional<ShortUrl>} access count by url.
      * @throws ResourceNotFoundException if the access count does not exist
      */
-    public int getStatsByShortCode(final String shortCode) {
+    public Optional<ShortUrl> getStatsByShortCode(final String shortCode) {
         Optional<ShortUrl> tempShort = getShortUrlRepository()
                 .findByShortCode(shortCode);
         if (tempShort.isPresent()) {
-            return tempShort.get().getAccessCount();
+            return tempShort;
         } else {
             throw new ResourceNotFoundException("Url not found");
         }
@@ -93,11 +92,11 @@ public class UrlShortnerService extends BaseUrlService {
      * and saves the mapping in both the database and Redis cache.
      *
      * @param url the original URL to shorten
-     * @return the generated shortcode
+     * @return the ShortUrl object containing the shortcode and original URL
      * @throws BadRequestException if the URL is invalid or empty
      */
     @Transactional
-    public String generateShortCode(final String url) {
+    public ShortUrl generateShortCode(final String url) {
         log.info("This is the originalURL: {}", url);
         if (url == null || url.isEmpty()) {
             log.error("Error generating short code");
@@ -109,17 +108,15 @@ public class UrlShortnerService extends BaseUrlService {
         String shortCode = zooKeeperService.getNextShortCode();
         log.info("Get nextSequence");
         ShortUrl shortUrl = new ShortUrl();
-        shortUrl.setId(UUID.randomUUID());
         shortUrl.setShortCode(shortCode);
         shortUrl.setUrl(url);
         shortUrl.setCreatedAt(Timestamp.from(Instant.now()));
         shortUrl.setUpdateAt(Timestamp.from(Instant.now()));
-        shortUrl.setAccessCount(0);
 
         getShortUrlRepository().save(shortUrl);
         getRedisService().saveToCache(shortCode, url);
 
-        return shortCode;
+        return shortUrl;
     }
 
     /**

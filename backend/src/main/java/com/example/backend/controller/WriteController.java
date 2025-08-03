@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.ShortenRequest;
+import com.example.backend.entity.ShortUrl;
 import com.example.backend.service.UrlShortnerService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -50,9 +51,9 @@ public final class WriteController {
     @PostMapping("/shorten")
     public ResponseEntity<?> createShortCode(@RequestBody
                                                  final ShortenRequest request) {
-        String shortCode = urlShortnerService.generateShortCode(request.url());
-        return ResponseEntity.status(HttpStatus.CREATED).
-                body(Map.of("shortcode", shortCode));
+        ShortUrl shortUrl = urlShortnerService.generateShortCode(request.url());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(shortUrl);
     }
 
     /**
