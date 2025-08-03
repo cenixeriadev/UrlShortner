@@ -9,7 +9,7 @@
 
     <!-- Regla de longitud de línea -->
     <module name="LineLength">
-        <property name="max" value="80"/> <!-- Longitud máxima de línea -->
+        <property name="max" value="90"/> <!-- Longitud máxima de línea -->
         <property name="ignorePattern" value="^package.*|^import.*"/> <!-- Ignora líneas de import y package -->
     </module>
     
