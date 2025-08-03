@@ -51,15 +51,18 @@
         <h3>✅ ¡Shortcode creado exitosamente!</h3>
         <div class="result-item">
           <strong>Shortcode:</strong>
-          <code>{{ shortenResult?.shortcode }}</code>
-          <button (click)="copyToClipboard(shortenResult.shortcode)" class="btn-copy">📋</button>
+          <code>{{ shortenResult?.shortCode }}</code>
+          <button (click)="copyToClipboard( shortenResult.shortCode)" class="btn-copy">📋</button>
         </div>
         <div class="result-item">
           <strong>URL completa:</strong>
-          <code>http://localhost:8081/{{ shortenResult?.shortcode }}</code>
-          <button (click)="copyToClipboard('http://localhost:8080/api/v1/read' + shortenResult.shortcode)" class="btn-copy">📋</button>
+          <code>http://localhost:8081/{{ shortenResult?.shortCode }}</code>
+          <button (click)="copyToClipboard('http://localhost:8081/' + shortenResult.shortCode)" class="btn-copy">📋</button>
         </div>
-
+        <div class="result-item">
+          <strong>URL original:</strong>
+          <a [href]="shortenResult.url" target="_blank">{{ shortenResult.url }}</a>
+        </div>
       </div>
     </div>
 
@@ -131,8 +134,16 @@
         <h3>📈 Estadísticas del Shortcode:</h3>
         <div class="stats-grid">
           <div class="stat-item">
+            <div class="stat-label">🗓️ Fecha de creación:</div>
+            <div class="stat-value">{{ statsResult?.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">👁️ Último actualización:</div>
+            <div class="stat-value">{{ statsResult?.updateAt | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <div class="stat-item">
             <div class="stat-label">🔢 Número de redirecciones:</div>
-            <div class="stat-value highlight">{{ statsResult}}</div>
+            <div class="stat-value highlight">{{ statsResult?.accessCount }}</div>
           </div>
         </div>
       </div>
