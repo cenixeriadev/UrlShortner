@@ -107,6 +107,7 @@ Below are the key endpoints provided by the service, along with detailed explana
   **Response:**
   
   Returns a 201 Created status with the generated short code in the response body, e.g., "1Z3".
+  
   ```json
   {
     "id": 2,
@@ -174,14 +175,15 @@ Below are the key endpoints provided by the service, along with detailed explana
   
   Returns a JSON object with  the accesCount in the response body:
   
-  ```json{
+  ```json
+  {
     "id": 3,
     "url": "https://example.com/very-long-url",
     "shortCode": "bQdP",
     "createdAt": "2025-08-03T23:33:54.213+00:00",
     "updateAt": "2025-08-03T23:33:54.213+00:00",
     "accessCount": 1
-}
+  }
   ```
 
 
