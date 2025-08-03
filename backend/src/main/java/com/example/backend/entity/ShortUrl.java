@@ -1,12 +1,13 @@
 package com.example.backend.entity;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import lombok.Data;
 import java.sql.Timestamp;
-import java.util.UUID;
 
 /**
  * Entity representing a shortened URL in the database.
@@ -26,14 +27,15 @@ import java.util.UUID;
 @Data
 public class ShortUrl {
     /**
-     * Unique identifier for the entity, represented as a UUID.
+     * Unique identifier for the entity, represented as a IDENTITY.
      * <p>
      * This field maps to the "id" column in the
      * "short_urls" table and cannot be null.
      */
     @Id
-    @Column(name = "id", columnDefinition = "UUID", nullable = false)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     /**
      * The original URL that was shortened.
