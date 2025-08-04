@@ -88,7 +88,7 @@ jobs:
                 ports:
                   - "5432:5432"
                 healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U testuser -d urlshortener"]
+                  test: ["CMD-SHELL", "pg_isready -U testuser -d urlshort"]
                   interval: 5s
                   timeout: 5s
                   retries: 5
@@ -152,7 +152,7 @@ jobs:
                   retries: 5
                 volumes:
                   pgdata:
-            EOF
+          EOF
           fi
             
           # Levantar pg, redis y zookeeper
