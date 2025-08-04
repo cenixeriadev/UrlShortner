@@ -128,7 +128,7 @@
           
           <!-- Create Short URL (60% of write operations) -->
           <IfController guiclass="IfControllerGui" testclass="IfController" testname="Create URL (60%)" enabled="true">
-            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} <= 60)}</stringProp>
+            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} &lt;= 60)}</stringProp>
             <boolProp name="IfController.evaluateAll">false</boolProp>
             <boolProp name="IfController.useExpression">true</boolProp>
           </IfController>
@@ -208,7 +208,7 @@
           
           <!-- Get URL by Shortcode (80% of read operations) -->
           <IfController guiclass="IfControllerGui" testclass="IfController" testname="Get URL (80%)" enabled="true">
-            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} <= 80)}</stringProp>
+            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} &lt;= 80)}</stringProp>
             <boolProp name="IfController.evaluateAll">false</boolProp>
             <boolProp name="IfController.useExpression">true</boolProp>
           </IfController>
@@ -244,7 +244,7 @@
           
           <!-- Get Stats (20% of read operations) -->
           <IfController guiclass="IfControllerGui" testclass="IfController" testname="Get Stats (20%)" enabled="true">
-            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} > 80)}</stringProp>
+            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} &gt; 80)}</stringProp>
             <boolProp name="IfController.evaluateAll">false</boolProp>
             <boolProp name="IfController.useExpression">true</boolProp>
           </IfController>
@@ -406,7 +406,7 @@
           
           <!-- Update URL (25% of write operations) -->
           <IfController guiclass="IfControllerGui" testclass="IfController" testname="Update URL (25%)" enabled="true">
-            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} > 60 &amp;&amp; ${SwitchController.value} <= 85)}</stringProp>
+            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} &gt; 60 &amp;&amp; ${SwitchController.value} &lt;= 85)}</stringProp>
             <boolProp name="IfController.evaluateAll">false</boolProp>
             <boolProp name="IfController.useExpression">true</boolProp>
           </IfController>
