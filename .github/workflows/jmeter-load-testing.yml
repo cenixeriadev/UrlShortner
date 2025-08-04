@@ -152,12 +152,6 @@ jobs:
 
       - name: Build and start backend
         run: |
-          # Primero compilar la aplicación
-          cd backend
-          chmod +x ./mvnw
-          ./mvnw clean package -DskipTests
-          cd ..
-          
           # Ahora construir la imagen del backend
           docker compose -f docker-compose.test.yml build backend
           
