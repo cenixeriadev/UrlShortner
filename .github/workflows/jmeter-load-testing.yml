@@ -117,7 +117,9 @@ jobs:
                   interval: 10s
                   timeout: 5s
                   retries: 5
-            
+                volumes:
+                  - zkdata:/data
+                  - zkdatalog:/datalog
               backend:
                 build:
                   context: ./backend
@@ -150,8 +152,10 @@ jobs:
                   interval: 30s
                   timeout: 10s
                   retries: 5
-                volumes:
-                  pgdata:
+            volumes:
+              pgdata:
+              zkdata:
+              zkdatalog:
           EOF
           fi
             
