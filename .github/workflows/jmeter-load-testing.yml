@@ -162,24 +162,55 @@ jobs:
           # Levantar pg, redis y zookeeper
           docker compose -f docker-compose.test.yml up -d pg redis zookeeper
           
-          # Esperar a que todos los servicios estén saludables
-          echo "Waiting for services to be healthy..."
-          timeout=180
+          echo "Waiting for PostgreSQL to be healthy..."
+          timeout=60
           while [ $timeout -gt 0 ]; do
-            if docker compose -f docker-compose.test.yml ps | grep -q "pg.*healthy.*redis.*healthy.*zookeeper.*healthy"; then
-              echo "All services are healthy"
+            if docker compose -f docker-compose.test.yml ps | grep pg | grep -q "healthy"; then
+              echo "✅ PostgreSQL is healthy"
               break
             fi
-            sleep 5
-            timeout=$((timeout - 5))
+            sleep 2
+            timeout=$((timeout - 2))
           done
           if [ $timeout -le 0 ]; then
-            echo "One or more services failed to become healthy"
+            echo "❌ PostgreSQL failed to become healthy"
             docker compose -f docker-compose.test.yml logs pg
+            exit 1
+          fi
+      
+          echo "Waiting for Redis to be healthy..."
+          timeout=60
+          while [ $timeout -gt 0 ]; do
+            if docker compose -f docker-compose.test.yml ps | grep redis | grep -q "healthy"; then
+              echo "✅ Redis is healthy"
+              break
+            fi
+            sleep 2
+            timeout=$((timeout - 2))
+          done
+          if [ $timeout -le 0 ]; then
+            echo "❌ Redis failed to become healthy"
             docker compose -f docker-compose.test.yml logs redis
+            exit 1
+          fi
+      
+          echo "Waiting for ZooKeeper to be healthy..."
+          timeout=60
+          while [ $timeout -gt 0 ]; do
+            if docker compose -f docker-compose.test.yml ps | grep zookeeper | grep -q "healthy"; then
+              echo "✅ ZooKeeper is healthy"
+              break
+            fi
+            sleep 2
+            timeout=$((timeout - 2))
+          done
+          if [ $timeout -le 0 ]; then
+            echo "❌ ZooKeeper failed to become healthy"
             docker compose -f docker-compose.test.yml logs zookeeper
             exit 1
           fi
+      
+          echo "All dependencies are ready
 
       - name: Build and start backend
         run: |
