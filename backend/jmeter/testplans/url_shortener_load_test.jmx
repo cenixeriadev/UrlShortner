@@ -128,7 +128,7 @@
           
           <!-- Create Short URL (60% of write operations) -->
           <IfController guiclass="IfControllerGui" testclass="IfController" testname="Create URL (60%)" enabled="true">
-            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} &lt;= 60)}</stringProp>
+            <stringProp name="IfController.condition">${__javaScript(${SwitchController.value} <= 60)}</stringProp>
             <boolProp name="IfController.evaluateAll">false</boolProp>
             <boolProp name="IfController.useExpression">true</boolProp>
           </IfController>
@@ -147,29 +147,32 @@
               <stringProp name="HTTPSampler.domain"></stringProp>
               <stringProp name="HTTPSampler.port"></stringProp>
               <stringProp name="HTTPSampler.protocol"></stringProp>
-              <stringProp name="HTTPSampler.path">/api/v1/write/shorten/${__RandomString(8,abcdefghijklmnopqrstuvwxyz0123456789)}</stringProp>
-              <stringProp name="HTTPSampler.method">DELETE</stringProp>
+              <stringProp name="HTTPSampler.path">/api/v1/write/shorten</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
               <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
               <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
               <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
               <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Delete Response Assertion" enabled="true">
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Shortcode" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">shortcode</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">$.shortcode</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Create Success Assertion" enabled="true">
                 <collectionProp name="Asserion.test_strings">
-                  <stringProp name="51508">404</stringProp>
-                  <stringProp name="51512">204</stringProp>
+                  <stringProp name="49586">201</stringProp>
                 </collectionProp>
                 <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
                 <boolProp name="Assertion.assume_success">false</boolProp>
-                <intProp name="Assertion.test_type">8</intProp>
+                <intProp name="Assertion.test_type">1</intProp>
               </ResponseAssertion>
               <hashTree/>
             </hashTree>
-          </IfController>
-          <hashTree/>
-        </SwitchController>
-        <hashTree/>
+          </hashTree>
         
         <!-- Think Time between operations -->
         <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Write Operations Think Time" enabled="true">
