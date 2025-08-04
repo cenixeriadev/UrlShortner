@@ -109,7 +109,7 @@ jobs:
               zookeeper:
                 image: zookeeper:3.9
                 ports:
-                  - "2182:2182"
+                  - "2181:2181"
                 environment:
                   ZOO_MY_ID: 1
                   ZOO_PORT: 2181
