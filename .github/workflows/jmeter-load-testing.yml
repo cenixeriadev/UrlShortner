@@ -80,7 +80,9 @@ jobs:
           # Other environment variables
           SPRING_PROFILES_ACTIVE=test
           EOF
-
+      - name: Copy .env to backend for runtime
+        run: |
+          cp .env backend/.env
       - name: Start services with Docker Compose
         run: |
           # Crear docker-compose para testing si no existe
