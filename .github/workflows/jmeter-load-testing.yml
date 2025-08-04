@@ -77,7 +77,10 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-
+      
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+      
       - name: Build application
         run: |
           ./mvnw clean compile -DskipTests
