@@ -40,11 +40,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java (para JMeter)
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Make mvnw executable and compile
+        working-directory: ./backend
+        run: |
+          chmod +x ./mvnw
+          ./mvnw clean package -DskipTests
 
       - name: Create .env file for testing
         run: |
@@ -139,7 +152,13 @@ jobs:
 
       - name: Build and start backend
         run: |
-          # Construir la imagen del backend
+          # Primero compilar la aplicación
+          cd backend
+          chmod +x ./mvnw
+          ./mvnw clean package -DskipTests
+          cd ..
+          
+          # Ahora construir la imagen del backend
           docker compose -f docker-compose.test.yml build backend
           
           # Levantar el backend
