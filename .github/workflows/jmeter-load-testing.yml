@@ -35,68 +35,122 @@ env:
 jobs:
   load-testing:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: urlshortener
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up Java (para JMeter)
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      
-      - name: Make mvnw executable
-        run: chmod +x ./mvnw
-      
-      - name: Build application
+      - name: Create .env file for testing
         run: |
-          ./mvnw clean compile -DskipTests
-
-      - name: Start application
-        run: |
-          nohup ./mvnw spring-boot:run > app.log 2>&1 &
-          echo $! > app.pid
+          cat > .env << EOF
+          # Database Configuration
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=urlshortener
+          DB_USERNAME=testuser
+          DB_PASSWORD=testpass
           
-          # Wait for application to start
+          # Redis Configuration
+          REDIS_HOST=localhost
+          REDIS_PORT=6379
+          
+          # Application Configuration
+          SERVER_PORT=8081
+          BASE_URL=http://localhost:8081
+          
+          # Other environment variables
+          SPRING_PROFILES_ACTIVE=test
+          EOF
+
+      - name: Start services with Docker Compose
+        run: |
+          # Crear docker-compose para testing si no existe
+          if [ ! -f "docker-compose.test.yml" ]; then
+            cat > docker-compose.test.yml << 'EOF'
+          version: '3.8'
+          services:
+            postgres:
+              image: postgres:16
+              environment:
+                POSTGRES_DB: urlshortener
+                POSTGRES_USER: testuser
+                POSTGRES_PASSWORD: testpass
+              ports:
+                - "5432:5432"
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U testuser -d urlshortener"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+          
+            redis:
+              image: redis:7-alpine
+              ports:
+                - "6379:6379"
+              healthcheck:
+                test: ["CMD", "redis-cli", "ping"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+          
+            backend:
+              build:
+                context: .
+                dockerfile: backend/Dockerfile
+              ports:
+                - "8081:8081"
+              depends_on:
+                postgres:
+                  condition: service_healthy
+                redis:
+                  condition: service_healthy
+              environment:
+                - SPRING_PROFILES_ACTIVE=test
+              env_file:
+                - .env
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 5
+          EOF
+          fi
+          
+          # Levantar los servicios
+          docker-compose -f docker-compose.test.yml up -d postgres redis
+          
+          # Esperar a que los servicios estén listos
+          echo "Waiting for services to be healthy..."
+          timeout=120
+          while [ $timeout -gt 0 ]; do
+            if docker-compose -f docker-compose.test.yml ps | grep -q "healthy"; then
+              echo "Database and Redis are healthy"
+              break
+            fi
+            sleep 2
+            timeout=$((timeout-2))
+          done
+
+      - name: Build and start backend
+        run: |
+          # Construir la imagen del backend
+          docker-compose -f docker-compose.test.yml build backend
+          
+          # Levantar el backend
+          docker-compose -f docker-compose.test.yml up -d backend
+          
+          # Esperar a que la aplicación esté lista
+          echo "Waiting for backend to be ready..."
           timeout=120
           while [ $timeout -gt 0 ]; do
             if curl -f http://localhost:8081/actuator/health > /dev/null 2>&1; then
-              echo "Application started successfully"
+              echo "Backend is ready!"
               break
             fi
             sleep 2
@@ -104,8 +158,11 @@ jobs:
           done
           
           if [ $timeout -le 0 ]; then
-            echo "Application failed to start"
-            cat app.log
+            echo "Backend failed to start"
+            echo "=== Backend logs ==="
+            docker-compose -f docker-compose.test.yml logs backend
+            echo "=== Service status ==="
+            docker-compose -f docker-compose.test.yml ps
             exit 1
           fi
 
@@ -119,28 +176,30 @@ jobs:
 
       - name: Create test data directory
         run: |
-          mkdir -p jmeter/testdata
-          mkdir -p jmeter/results
+          mkdir -p backend/jmeter/results
 
       - name: Verify test data exists
+        working-directory: ./backend
         run: |
           if [ ! -f "jmeter/testdata/test_urls.csv" ]; then
             echo "❌ Error: test_urls.csv not found in jmeter/testdata/"
             echo "Please ensure the file exists in your repository"
+            ls -la jmeter/testdata/ || echo "Directory doesn't exist"
             exit 1
           fi
           
           echo "✅ Test data file found"
           echo "Number of test URLs: $(tail -n +2 jmeter/testdata/test_urls.csv | wc -l)"
-          echo "Preview of test data:"
+          echo "First 5 lines of test data:"
           head -5 jmeter/testdata/test_urls.csv
-      
-      - name: Create JMeter test plans
+
+      - name: Create JMeter test plans directory
+        working-directory: ./backend
         run: |
-          # Crear directorio para los planes de prueba
           mkdir -p jmeter/testplans
 
       - name: Run Load Tests
+        working-directory: ./backend
         run: |
           # Configurar variables de entorno para JMeter
           export TEST_DURATION="${{ github.event.inputs.test_duration || '300' }}"
@@ -155,10 +214,11 @@ jobs:
             -Jrampup=$RAMP_UP_TIME \
             -Jduration=$TEST_DURATION \
             -Jhost=localhost \
-            -Jport=8080 \
+            -Jport=8081 \
             -Jprotocol=http
-  
+
       - name: Run Stress Tests
+        working-directory: ./backend
         run: |
           # Prueba de estrés con más usuarios
           STRESS_USERS=100
@@ -172,10 +232,11 @@ jobs:
             -Jrampup=$STRESS_RAMP_UP \
             -Jduration=$STRESS_DURATION \
             -Jhost=localhost \
-            -Jport=8080 \
+            -Jport=8081 \
             -Jprotocol=http
 
       - name: Run Spike Tests
+        working-directory: ./backend
         run: |
           # Prueba de picos de carga
           SPIKE_USERS=200
@@ -189,10 +250,11 @@ jobs:
             -Jrampup=$SPIKE_RAMP_UP \
             -Jduration=$SPIKE_DURATION \
             -Jhost=localhost \
-            -Jport=8080 \
+            -Jport=8081 \
             -Jprotocol=http
 
       - name: Analyze Results
+        working-directory: ./backend
         run: |
           echo "=== LOAD TEST RESULTS ===" 
           if [ -f "jmeter/results/load_test_results.jtl" ]; then
@@ -256,6 +318,7 @@ jobs:
           fi
 
       - name: Check Performance Thresholds
+        working-directory: ./backend
         run: |
           # Verificar que el porcentaje de errores sea menor al 5%
           ERROR_THRESHOLD=5
@@ -290,8 +353,7 @@ jobs:
         with:
           name: jmeter-results
           path: |
-            jmeter/results/
-            app.log
+            backend/jmeter/results/
           retention-days: 30
 
       - name: Upload HTML Reports
@@ -300,14 +362,23 @@ jobs:
         with:
           name: jmeter-html-reports
           path: |
-            jmeter/results/html_report/
-            jmeter/results/stress_html_report/
-            jmeter/results/spike_html_report/
+            backend/jmeter/results/html_report/
+            backend/jmeter/results/stress_html_report/
+            backend/jmeter/results/spike_html_report/
           retention-days: 30
 
-      - name: Stop application
+      - name: Upload Docker logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: docker-logs
+          path: |
+            docker-logs.txt
+          retention-days: 7
+
+      - name: Stop Docker services
         if: always()
         run: |
-          if [ -f app.pid ]; then
-            kill $(cat app.pid) || true
-          fi
+          echo "Stopping Docker services..."
+          docker-compose -f docker-compose.test.yml logs backend > docker-logs.txt || true
+          docker-compose -f docker-compose.test.yml down -v || true
