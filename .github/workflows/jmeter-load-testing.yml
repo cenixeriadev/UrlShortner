@@ -114,8 +114,8 @@ jobs:
           
             backend:
               build:
-                context: .
-                dockerfile: backend/Dockerfile
+                context: ./backend
+                dockerfile: Dockerfile
               ports:
                 - "8081:8081"
               depends_on:
