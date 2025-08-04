@@ -118,6 +118,8 @@ jobs:
                 - REDIS_PORT=6379
                 - SERVER_PORT=8081
                 - SPRING_PROFILES_ACTIVE=test
+              env_file:
+                - .env
               ports:
                 - "8081:8081"
               depends_on:
