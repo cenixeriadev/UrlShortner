@@ -2,7 +2,7 @@ name: JMeter Load Testing
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main]
   pull_request:
     branches: [ main ]
   schedule:
@@ -35,7 +35,9 @@ env:
 jobs:
   load-testing:
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        working-directory: ./backend
     services:
       postgres:
         image: postgres:16
