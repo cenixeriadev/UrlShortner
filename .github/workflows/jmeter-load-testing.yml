@@ -128,7 +128,6 @@ jobs:
                 ports:
                   - "8081:8081"
                 environment:
-                  - SPRING_PROFILES_ACTIVE=test
                   - DB_HOST=pg
                   - DB_PORT=5432
                   - DB_NAME=urlshort
