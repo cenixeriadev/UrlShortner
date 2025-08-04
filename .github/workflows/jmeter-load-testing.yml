@@ -68,7 +68,7 @@ jobs:
             postgres:
               image: postgres:16
               environment:
-                POSTGRES_DB: urlshortener
+                POSTGRES_DB: urlshort
                 POSTGRES_USER: testuser
                 POSTGRES_PASSWORD: testpass
               ports:
@@ -110,10 +110,6 @@ jobs:
                   condition: service_healthy
                 redis:
                   condition: service_healthy
-              environment:
-                - SPRING_PROFILES_ACTIVE=test
-              env_file:
-                - .env
               healthcheck:
                 test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
                 interval: 30s
