@@ -137,7 +137,6 @@ jobs:
                   - REDIS_HOST=redis
                   - REDIS_PORT=6379
                   - ZOOKEEPER_HOST=zookeeper
-                  - ZOOKEEPER_PORT=2181
                   - SERVER_PORT=8081
                   - SPRING_JPA_HIBERNATE_DDL_AUTO=update
                   - SPRING_DATASOURCE_URL=jdbc:postgresql://pg:5432/urlshort
