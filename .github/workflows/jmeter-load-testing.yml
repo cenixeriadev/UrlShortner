@@ -1,0 +1,332 @@
+name: JMeter Load Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Ejecutar pruebas de carga todos los días a las 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '300'
+        type: string
+      concurrent_users:
+        description: 'Number of concurrent users'
+        required: false
+        default: '50'
+        type: string
+      ramp_up_time:
+        description: 'Ramp-up time in seconds'
+        required: false
+        default: '60'
+        type: string
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'corretto'
+  JMETER_VERSION: '5.6.3'
+  API_BASE_URL: 'http://localhost:8081/api/v1'
+
+jobs:
+  load-testing:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: urlshortener
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build application
+        run: |
+          ./mvnw clean compile -DskipTests
+
+      - name: Start application
+        run: |
+          nohup ./mvnw spring-boot:run > app.log 2>&1 &
+          echo $! > app.pid
+          
+          # Wait for application to start
+          timeout=120
+          while [ $timeout -gt 0 ]; do
+            if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "Application started successfully"
+              break
+            fi
+            sleep 2
+            timeout=$((timeout-2))
+          done
+          
+          if [ $timeout -le 0 ]; then
+            echo "Application failed to start"
+            cat app.log
+            exit 1
+          fi
+
+      - name: Install JMeter
+        run: |
+          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.zip
+          unzip apache-jmeter-${{ env.JMETER_VERSION }}.zip
+          sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
+          sudo ln -s /opt/jmeter/bin/jmeter /usr/local/bin/jmeter
+          jmeter --version
+
+      - name: Create test data directory
+        run: |
+          mkdir -p jmeter/testdata
+          mkdir -p jmeter/results
+
+      - name: Generate test data
+        run: |
+          # Crear CSV con URLs de prueba
+          cat > jmeter/testdata/test_urls.csv << 'EOF'
+          url,expected_shortcode
+          https://www.google.com,
+          https://www.github.com,
+          https://www.stackoverflow.com,
+          https://www.youtube.com,
+          https://www.amazon.com,
+          https://www.netflix.com,
+          https://www.facebook.com,
+          https://www.twitter.com,
+          https://www.linkedin.com,
+          https://www.instagram.com,
+          https://www.microsoft.com,
+          https://www.apple.com,
+          https://www.oracle.com,
+          https://www.ibm.com,
+          https://www.salesforce.com,
+          https://www.adobe.com,
+          https://www.shopify.com,
+          https://www.dropbox.com,
+          https://www.slack.com,
+          https://www.zoom.us,
+          https://www.reddit.com,
+          https://www.wikipedia.org,
+          https://www.medium.com,
+          https://www.twitch.tv,
+          https://www.discord.com,
+          https://www.spotify.com,
+          https://www.paypal.com,
+          https://www.uber.com,
+          https://www.airbnb.com,
+          https://www.booking.com
+          EOF
+
+      - name: Create JMeter test plans
+        run: |
+          # Crear directorio para los planes de prueba
+          mkdir -p jmeter/testplans
+
+      - name: Run Load Tests
+        run: |
+          # Configurar variables de entorno para JMeter
+          export TEST_DURATION="${{ github.event.inputs.test_duration || '300' }}"
+          export CONCURRENT_USERS="${{ github.event.inputs.concurrent_users || '50' }}"
+          export RAMP_UP_TIME="${{ github.event.inputs.ramp_up_time || '60' }}"
+          
+          # Ejecutar pruebas de carga
+          jmeter -n -t jmeter/testplans/url_shortener_load_test.jmx \
+            -l jmeter/results/load_test_results.jtl \
+            -e -o jmeter/results/html_report \
+            -Jthreads=$CONCURRENT_USERS \
+            -Jrampup=$RAMP_UP_TIME \
+            -Jduration=$TEST_DURATION \
+            -Jhost=localhost \
+            -Jport=8080 \
+            -Jprotocol=http
+
+      - name: Run Stress Tests
+        run: |
+          # Prueba de estrés con más usuarios
+          STRESS_USERS=100
+          STRESS_RAMP_UP=30
+          STRESS_DURATION=180
+          
+          jmeter -n -t jmeter/testplans/url_shortener_stress_test.jmx \
+            -l jmeter/results/stress_test_results.jtl \
+            -e -o jmeter/results/stress_html_report \
+            -Jthreads=$STRESS_USERS \
+            -Jrampup=$STRESS_RAMP_UP \
+            -Jduration=$STRESS_DURATION \
+            -Jhost=localhost \
+            -Jport=8080 \
+            -Jprotocol=http
+
+      - name: Run Spike Tests
+        run: |
+          # Prueba de picos de carga
+          SPIKE_USERS=200
+          SPIKE_RAMP_UP=10
+          SPIKE_DURATION=60
+          
+          jmeter -n -t jmeter/testplans/url_shortener_spike_test.jmx \
+            -l jmeter/results/spike_test_results.jtl \
+            -e -o jmeter/results/spike_html_report \
+            -Jthreads=$SPIKE_USERS \
+            -Jrampup=$SPIKE_RAMP_UP \
+            -Jduration=$SPIKE_DURATION \
+            -Jhost=localhost \
+            -Jport=8080 \
+            -Jprotocol=http
+
+      - name: Analyze Results
+        run: |
+          echo "=== LOAD TEST RESULTS ===" 
+          if [ -f "jmeter/results/load_test_results.jtl" ]; then
+            # Mostrar estadísticas básicas
+            awk -F',' 'NR>1 {
+              total++; 
+              if($8=="true") success++; 
+              if($8=="false") errors++;
+              sum+=$2; 
+              if($2>max || max=="") max=$2; 
+              if($2<min || min=="") min=$2
+            } 
+            END {
+              print "Total Requests: " total;
+              print "Successful: " success " (" (success/total*100) "%)";
+              print "Errors: " errors " (" (errors/total*100) "%)";
+              print "Average Response Time: " (sum/total) " ms";
+              print "Min Response Time: " min " ms";
+              print "Max Response Time: " max " ms"
+            }' jmeter/results/load_test_results.jtl
+          fi
+          
+          echo -e "\n=== STRESS TEST RESULTS ===" 
+          if [ -f "jmeter/results/stress_test_results.jtl" ]; then
+            awk -F',' 'NR>1 {
+              total++; 
+              if($8=="true") success++; 
+              if($8=="false") errors++;
+              sum+=$2; 
+              if($2>max || max=="") max=$2; 
+              if($2<min || min=="") min=$2
+            } 
+            END {
+              print "Total Requests: " total;
+              print "Successful: " success " (" (success/total*100) "%)";
+              print "Errors: " errors " (" (errors/total*100) "%)";
+              print "Average Response Time: " (sum/total) " ms";
+              print "Min Response Time: " min " ms";
+              print "Max Response Time: " max " ms"
+            }' jmeter/results/stress_test_results.jtl
+          fi
+          
+          echo -e "\n=== SPIKE TEST RESULTS ===" 
+          if [ -f "jmeter/results/spike_test_results.jtl" ]; then
+            awk -F',' 'NR>1 {
+              total++; 
+              if($8=="true") success++; 
+              if($8=="false") errors++;
+              sum+=$2; 
+              if($2>max || max=="") max=$2; 
+              if($2<min || min=="") min=$2
+            } 
+            END {
+              print "Total Requests: " total;
+              print "Successful: " success " (" (success/total*100) "%)";
+              print "Errors: " errors " (" (errors/total*100) "%)";
+              print "Average Response Time: " (sum/total) " ms";
+              print "Min Response Time: " min " ms";
+              print "Max Response Time: " max " ms"
+            }' jmeter/results/spike_test_results.jtl
+          fi
+
+      - name: Check Performance Thresholds
+        run: |
+          # Verificar que el porcentaje de errores sea menor al 5%
+          ERROR_THRESHOLD=5
+          RESPONSE_TIME_THRESHOLD=2000
+          
+          for test_type in "load" "stress" "spike"; do
+            if [ -f "jmeter/results/${test_type}_test_results.jtl" ]; then
+              ERROR_RATE=$(awk -F',' 'NR>1 {total++; if($8=="false") errors++} END {print (errors/total*100)}' jmeter/results/${test_type}_test_results.jtl)
+              AVG_RESPONSE_TIME=$(awk -F',' 'NR>1 {sum+=$2; count++} END {print sum/count}' jmeter/results/${test_type}_test_results.jtl)
+          
+              echo "Test: ${test_type}"
+              echo "Error Rate: ${ERROR_RATE}%"
+              echo "Average Response Time: ${AVG_RESPONSE_TIME}ms"
+          
+              if (( $(echo "$ERROR_RATE > $ERROR_THRESHOLD" | bc -l) )); then
+                echo "❌ ERROR: Error rate (${ERROR_RATE}%) exceeds threshold (${ERROR_THRESHOLD}%)"
+                exit 1
+              fi
+          
+              if (( $(echo "$AVG_RESPONSE_TIME > $RESPONSE_TIME_THRESHOLD" | bc -l) )); then
+                echo "⚠️  WARNING: Average response time (${AVG_RESPONSE_TIME}ms) exceeds threshold (${RESPONSE_TIME_THRESHOLD}ms)"
+              fi
+          
+              echo "✅ ${test_type} test passed performance thresholds"
+              echo "---"
+            fi
+          done
+
+      - name: Upload JMeter Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jmeter-results
+          path: |
+            jmeter/results/
+            app.log
+          retention-days: 30
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jmeter-html-reports
+          path: |
+            jmeter/results/html_report/
+            jmeter/results/stress_html_report/
+            jmeter/results/spike_html_report/
+          retention-days: 30
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f app.pid ]; then
+            kill $(cat app.pid) || true
+          fi
