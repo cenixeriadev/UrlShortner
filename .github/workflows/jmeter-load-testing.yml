@@ -58,31 +58,6 @@ jobs:
         run: |
           chmod +x ./mvnw
           ./mvnw clean package -DskipTests
-
-      - name: Create .env file for testing
-        run: |
-          cat > .env << EOF
-          # Database Configuration
-          DB_HOST=localhost
-          DB_PORT=5432
-          DB_NAME=urlshortener
-          DB_USERNAME=testuser
-          DB_PASSWORD=testpass
-          
-          # Redis Configuration
-          REDIS_HOST=localhost
-          REDIS_PORT=6379
-          
-          # Application Configuration
-          SERVER_PORT=8081
-          BASE_URL=http://localhost:8081
-          
-          # Other environment variables
-          SPRING_PROFILES_ACTIVE=test
-          EOF
-      - name: Copy .env to backend for runtime
-        run: |
-          cp .env backend/.env
       - name: Start services with Docker Compose
         run: |
           # Crear docker-compose para testing si no existe
@@ -118,6 +93,16 @@ jobs:
               build:
                 context: ./backend
                 dockerfile: Dockerfile
+              environment:
+                - DB_HOST=localhost
+                - DB_PORT=5432
+                - DB_NAME=urlshort
+                - DB_USERNAME=testuser
+                - DB_PASSWORD=testpass
+                - REDIS_HOST=localhost
+                - REDIS_PORT=6379
+                - SERVER_PORT=8081
+                - SPRING_PROFILES_ACTIVE=test
               ports:
                 - "8081:8081"
               depends_on:
