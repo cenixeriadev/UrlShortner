@@ -52,7 +52,22 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-
+      - name: Create .env file for testing
+        run: |
+          cat > .env << EOF
+          DB_HOST=localhost
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=urlshort
+          DB_USERNAME=testuser
+          DB_PASSWORD=testpass
+          REDIS_HOST=localhost
+          REDIS_PORT=6379
+          SERVER_PORT=8081
+          EOF
+      - name: Copy .env to backend for runtime
+        run: |
+          cp .env backend/.env
       - name: Make mvnw executable and compile
         working-directory: ./backend
         run: |
