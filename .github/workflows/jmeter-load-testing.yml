@@ -123,13 +123,13 @@ jobs:
           fi
           
           # Levantar los servicios
-          docker-compose -f docker-compose.test.yml up -d postgres redis
+          docker compose -f docker-compose.test.yml up -d postgres redis
           
           # Esperar a que los servicios estén listos
           echo "Waiting for services to be healthy..."
           timeout=120
           while [ $timeout -gt 0 ]; do
-            if docker-compose -f docker-compose.test.yml ps | grep -q "healthy"; then
+            if docker compose -f docker-compose.test.yml ps | grep -q "healthy"; then
               echo "Database and Redis are healthy"
               break
             fi
@@ -140,10 +140,10 @@ jobs:
       - name: Build and start backend
         run: |
           # Construir la imagen del backend
-          docker-compose -f docker-compose.test.yml build backend
+          docker compose -f docker-compose.test.yml build backend
           
           # Levantar el backend
-          docker-compose -f docker-compose.test.yml up -d backend
+          docker compose -f docker-compose.test.yml up -d backend
           
           # Esperar a que la aplicación esté lista
           echo "Waiting for backend to be ready..."
@@ -160,9 +160,9 @@ jobs:
           if [ $timeout -le 0 ]; then
             echo "Backend failed to start"
             echo "=== Backend logs ==="
-            docker-compose -f docker-compose.test.yml logs backend
+            docker compose -f docker-compose.test.yml logs backend
             echo "=== Service status ==="
-            docker-compose -f docker-compose.test.yml ps
+            docker compose -f docker-compose.test.yml ps
             exit 1
           fi
 
@@ -380,5 +380,5 @@ jobs:
         if: always()
         run: |
           echo "Stopping Docker services..."
-          docker-compose -f docker-compose.test.yml logs backend > docker-logs.txt || true
-          docker-compose -f docker-compose.test.yml down -v || true
+          docker compose -f docker-compose.test.yml logs backend > docker-logs.txt || true
+          docker compose -f docker-compose.test.yml down -v || true
