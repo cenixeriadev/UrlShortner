@@ -95,7 +95,7 @@ jobs:
           # Wait for application to start
           timeout=120
           while [ $timeout -gt 0 ]; do
-            if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+            if curl -f http://localhost:8081/actuator/health > /dev/null 2>&1; then
               echo "Application started successfully"
               break
             fi
@@ -122,43 +122,19 @@ jobs:
           mkdir -p jmeter/testdata
           mkdir -p jmeter/results
 
-      - name: Generate test data
+      - name: Verify test data exists
         run: |
-          # Crear CSV con URLs de prueba
-          cat > jmeter/testdata/test_urls.csv << 'EOF'
-          url,expected_shortcode
-          https://www.google.com,
-          https://www.github.com,
-          https://www.stackoverflow.com,
-          https://www.youtube.com,
-          https://www.amazon.com,
-          https://www.netflix.com,
-          https://www.facebook.com,
-          https://www.twitter.com,
-          https://www.linkedin.com,
-          https://www.instagram.com,
-          https://www.microsoft.com,
-          https://www.apple.com,
-          https://www.oracle.com,
-          https://www.ibm.com,
-          https://www.salesforce.com,
-          https://www.adobe.com,
-          https://www.shopify.com,
-          https://www.dropbox.com,
-          https://www.slack.com,
-          https://www.zoom.us,
-          https://www.reddit.com,
-          https://www.wikipedia.org,
-          https://www.medium.com,
-          https://www.twitch.tv,
-          https://www.discord.com,
-          https://www.spotify.com,
-          https://www.paypal.com,
-          https://www.uber.com,
-          https://www.airbnb.com,
-          https://www.booking.com
-          EOF
-
+          if [ ! -f "jmeter/testdata/test_urls.csv" ]; then
+            echo "❌ Error: test_urls.csv not found in jmeter/testdata/"
+            echo "Please ensure the file exists in your repository"
+            exit 1
+          fi
+          
+          echo "✅ Test data file found"
+          echo "Number of test URLs: $(tail -n +2 jmeter/testdata/test_urls.csv | wc -l)"
+          echo "Preview of test data:"
+          head -5 jmeter/testdata/test_urls.csv
+      
       - name: Create JMeter test plans
         run: |
           # Crear directorio para los planes de prueba
@@ -181,7 +157,7 @@ jobs:
             -Jhost=localhost \
             -Jport=8080 \
             -Jprotocol=http
-
+  
       - name: Run Stress Tests
         run: |
           # Prueba de estrés con más usuarios
