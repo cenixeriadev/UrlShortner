@@ -220,7 +220,7 @@ jobs:
           # Ejecutar el script SQL para poblar la base de datos
           if [ -f "backend/db/populate_test_data.sql" ]; then
             echo "Cargando datos de prueba en la base de datos..."
-            docker-compose -f docker-compose.test.yml exec -T pg psql -U testuser -d urlshort -f /docker-entrypoint-initdb.d/populate_test_data.sql
+            docker compose -f docker-compose.test.yml exec -T pg psql -U testuser -d urlshort -f /docker-entrypoint-initdb.d/populate_test_data.sql
           else
             echo "Archivo de datos de prueba no encontrado"
             exit 1
