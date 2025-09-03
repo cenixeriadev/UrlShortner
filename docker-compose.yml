@@ -17,6 +17,15 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_DATASOURCE_URL=jdbc:postgresql://pg:5432/urlshort
+      - JAVA_OPTS=-Xmx2g -Xms1g -Xss1m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+UseContainerSupport
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+          cpus: '2.0'
+        reservations:
+          memory: 1g
+          cpus: '1.0'
     networks:
       - backend_network
     depends_on:
