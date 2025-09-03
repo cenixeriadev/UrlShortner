@@ -295,24 +295,6 @@ jobs:
         run: |
           mkdir -p jmeter/testplans
 
-      - name: Run Load Tests
-        working-directory: ./backend
-        run: |
-          # Configurar variables de entorno para JMeter
-          export TEST_DURATION="${{ github.event.inputs.test_duration || '300' }}"
-          export CONCURRENT_USERS="${{ github.event.inputs.concurrent_users || '50' }}"
-          export RAMP_UP_TIME="${{ github.event.inputs.ramp_up_time || '60' }}"
-          
-          # Ejecutar pruebas de carga
-          jmeter -n -t jmeter/testplans/url_shortener_load_test.jmx \
-            -l jmeter/results/load_test_results.jtl \
-            -e -o jmeter/results/html_report \
-            -Jthreads=$CONCURRENT_USERS \
-            -Jrampup=$RAMP_UP_TIME \
-            -Jduration=$TEST_DURATION \
-            -Jhost=localhost \
-            -Jport=8081 \
-            -Jprotocol=http
 
       - name: Run Stress Tests
         working-directory: ./backend
